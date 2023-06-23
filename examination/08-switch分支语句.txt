@@ -1,0 +1,114 @@
+1. 有如下程序
+main（）
+{ 
+    int  x = 1, a = 0, b = 0;
+    switch( x )
+    {
+        case 0: b++;
+        case 1: a++；
+        case 2: a++; b++；
+    }
+printf (“ a= %d, b= %d \n”, a, b);
+}
+该程序的输出结果是 [单选题] [必答题]
+    ○ A) a=2,b=1
+   ○ B) a=1,b=1
+   ○ C) a=1,b=0
+   ○ D) a=2,b=2
+
+2. 有如下程序
+main( )
+{ 
+    float x = 2.0, y;
+    if( x < 0.0 ) 
+        y = 0.0;
+    else if ( x < 10.0) 
+        y = 1.0 / x;
+    else y = 1.0;
+    printf (“ %f \n”, y);
+}
+该程序的输出结果是 [单选题] [必答题]
+   ○ A) 0.000000
+   ○ B) 0.250000
+    ○ C) 0.500000
+   ○ D) 1.000000
+   
+3. 请读程序:
+# include <stdio.h>
+    main( )
+    {     
+        int x = 1,  y = 0 ,  a = 0 ,  b = 0;
+        switch( x )
+        { 
+            case 1:
+            switch( y )
+            { 
+                case 0:  a++ ;
+                    break;
+                case 1:  b++;
+                    break;
+             }
+            case 2:
+                a++; 
+                b++; 
+                break;
+        }
+        printf (" a = %d,  b = %d \n", a , b );
+     }
+上面程序的输出结果是 [单选题] [必答题]
+    ○ A) a=2, b=1
+   ○ B) a=1, b=1
+   ○ C) a=1, b=0
+   ○ D) a=2, b=2
+
+4. 有以下程序 
+main( )
+{ 
+    int k = 5 , n = 0;
+    while ( k > 0 )
+    { 
+        switch ( k ) 
+        { 
+        default : break; 
+        case 1 : n+= k; 
+        case 2 : 
+        case 3 : n+=k;
+        } 
+    k--; 
+    }
+printf("%d\n",n); 
+}
+程序运行后的输出结果是 [单选题] [必答题]
+   ○ A)0
+   ○ B)4
+   ○ C)6
+    ○ D)7
+
+
+ 
+5. 运行以下程序后,如果从键盘上输入 china#<回车>,则输出结果为    
+# include <stdio.h>
+mair( )
+{ 
+    int v1 = 0, v2 = 0;
+    char ch;
+    while ( ( ch = getchar ( ) ) != ' # ' )
+    switch ( ch )
+    { 
+        case 'a':
+        case 'h':
+        default :v1++;
+        case '0':  v2++;
+    }
+printf ( " %d , %d \n ", v1, v2 );
+} [单选题] [必答题]
+   ○ A) 2,0
+   ○ B) 5,0
+    ○ C) 5,5
+   ○ D) 2,5
+
+
+
+
+
+
