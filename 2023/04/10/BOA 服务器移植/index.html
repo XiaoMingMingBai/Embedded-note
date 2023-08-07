@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="BOA 服务器BOA 是一个小型的 HTTP 服务器，它的特点是占用资源少，运行速度快，是嵌入式 Linux 系统的首选 HTTP 服务器。BOA 的源代码可以从 http:&#x2F;&#x2F;www.boa.org&#x2F; 下载。以下内容仅为对我所做项目移植的记录，详细内容请参考 BOA 官方文档。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="BOA 服务器移植">
+<meta property="og:url" content="http://example.com/2023/04/10/BOA%20%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%A7%BB%E6%A4%8D/index.html">
+<meta property="og:site_name" content="境">
+<meta property="og:description" content="BOA 服务器BOA 是一个小型的 HTTP 服务器，它的特点是占用资源少，运行速度快，是嵌入式 Linux 系统的首选 HTTP 服务器。BOA 的源代码可以从 http:&#x2F;&#x2F;www.boa.org&#x2F; 下载。以下内容仅为对我所做项目移植的记录，详细内容请参考 BOA 官方文档。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/image/boaTest.png">
+<meta property="article:published_time" content="2023-04-10T14:07:08.000Z">
+<meta property="article:modified_time" content="2023-08-07T10:29:26.222Z">
+<meta property="article:author" content="XiaoMingMingBai">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/image/boaTest.png">
+
+<link rel="canonical" href="http://example.com/2023/04/10/BOA%20%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%A7%BB%E6%A4%8D/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>BOA 服务器移植 | 境</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">境</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-resources">
+
+    <a href="/resources/" rel="section"><i class="download fa-fw"></i>资源</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/xiaomingmingbai" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/04/10/BOA%20%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%A7%BB%E6%A4%8D/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="XiaoMingMingBai">
+      <meta itemprop="description" content="选择有时候比努力更重要">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="境">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          BOA 服务器移植
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-04-10 22:07:08" itemprop="dateCreated datePublished" datetime="2023-04-10T22:07:08+08:00">2023-04-10</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-08-07 18:29:26" itemprop="dateModified" datetime="2023-08-07T18:29:26+08:00">2023-08-07</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.7k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>7 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="BOA-服务器"><a href="#BOA-服务器" class="headerlink" title="BOA 服务器"></a>BOA 服务器</h1><p>BOA 是一个小型的 HTTP 服务器，它的特点是占用资源少，运行速度快，是嵌入式 Linux 系统的首选 HTTP 服务器。BOA 的源代码可以从 <a target="_blank" rel="noopener" href="http://www.boa.org/">http://www.boa.org/</a> 下载。以下内容仅为对我所做项目移植的记录，详细内容请参考 <a target="_blank" rel="noopener" href="http://www.boa.org/">BOA 官方文档</a>。</p>
+<span id="more"></span>
+
+<h1 id="BOA-服务器移植"><a href="#BOA-服务器移植" class="headerlink" title="BOA 服务器移植"></a>BOA 服务器移植</h1><ol>
+<li><p>解压源码</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">tar xvf boa-0.94.13.tar.tar</span><br><span class="line"><span class="built_in">cd</span> boa-0.94.13</span><br></pre></td></tr></table></figure></li>
+<li><p>进入 src&#x2F; 目录，生成并修改 Makefile 文件</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> src/</span><br><span class="line">./configure      <span class="comment"># 生成 Makefile 文件</span></span><br><span class="line">vim Makefile</span><br></pre></td></tr></table></figure>
+<p>修改如下：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">CC = arm-linux-gnueabihf-gcc <span class="comment"># 修改编译器</span></span><br><span class="line">CPP = arm-linux-gnueabihf-gcc -E <span class="comment"># 修改预处理器</span></span><br></pre></td></tr></table></figure></li>
+<li><p>make 编译<br>编译一个linux下的c系统，包含词法和语法分析模块，Linux上用bison和flex。yacc是一个文法分析器的生成器,bison即是yacc的GNU版本.Lex和YACC是用于构造词法分析机和语法解释器的工具，利用Lex和YACC你可以轻松的构造一个语法解释器。</p>
+ <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install bison flex <span class="comment"># 安装bison和flex</span></span><br><span class="line">make <span class="comment"># 编译</span></span><br></pre></td></tr></table></figure></li>
+<li><p>给 boa 瘦身</p>
+ <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">arm-linux-gnueabihf-strip boa <span class="comment"># 去掉符号表</span></span><br></pre></td></tr></table></figure></li>
+</ol>
+<h1 id="BOA-服务器配置"><a href="#BOA-服务器配置" class="headerlink" title="BOA 服务器配置"></a>BOA 服务器配置</h1><p>开发板的根目录文件 <code>rootfsmy</code></p>
+<ol>
+<li><p>创建目录</p>
+ <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">mkdir</span> /etc/boa <span class="comment"># 创建 boa 配置文件目录</span></span><br></pre></td></tr></table></figure></li>
+<li><p>将 <code>boa</code> 源码目录下的 <code>boa.conf</code> 拷贝到 <code>/etc/boa/</code> 目录下</p>
+ <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cp</span> boa.conf /rootfsmy/etc/boa/ </span><br></pre></td></tr></table></figure></li>
+<li><p>修改配置文件 boa.conf</p>
+ <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vim /rootfsmy/etc/boa/boa.conf</span><br></pre></td></tr></table></figure>
+<p> 修改如下：</p>
+ <figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 1. Group nogroup </span></span><br><span class="line">Group 0 <span class="comment"># Group 的修改</span></span><br><span class="line"><span class="comment"># 2. User nobody</span></span><br><span class="line">User 0 <span class="comment"># User 的修改</span></span><br><span class="line"><span class="comment"># 3. ScriptAlias /cgi-bin/ /usr/lib/cgi-bin/</span></span><br><span class="line">ScriptAlias /cgi-bin/ /www/cgi-bin/ <span class="comment"># ScriptAlias 的修改</span></span><br><span class="line"><span class="comment"># 4. DocumentRoot /var/www/</span></span><br><span class="line">DocumentRoot /www <span class="comment"># DocumentRoot 的修改</span></span><br><span class="line"><span class="comment"># 5. #ServerName www.example.com</span></span><br><span class="line">ServerName www.your.org.here <span class="comment"># ServerName 的修改</span></span><br><span class="line"><span class="comment"># 6. AccessLog /var/log/boa/access_log</span></span><br><span class="line"><span class="comment">#AccessLog /var/log/boa/access_log # AccessLog 的修改</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>一下配置和 <code>boa.conf</code> 有关，都是在 ARM 根文件系统中创建</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">mkdir</span> /www <span class="comment"># 创建网页根目录</span></span><br><span class="line"><span class="built_in">mkdir</span> /www/cgi-bin <span class="comment"># 创建 CGI 脚本所在目录  </span></span><br></pre></td></tr></table></figure>
+<p>当不能用 <code>cgi</code> 时</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># #AddType application/x-httpd-cgi cgi</span></span><br><span class="line">AddType application/x-httpd-cgi cgi <span class="comment"># AddType 的修改</span></span><br></pre></td></tr></table></figure></li>
+</ol>
+<h1 id="BOA-服务器测试"><a href="#BOA-服务器测试" class="headerlink" title="BOA 服务器测试"></a>BOA 服务器测试</h1><ol>
+<li>将 <code>boa</code> 拷贝到开发板的 <code>/etc/boa</code> 目录下 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cp</span> src/boa /rootfsmy/etc/boa/</span><br></pre></td></tr></table></figure></li>
+<li>将 <code>ubuntu</code> 下 <code>/etc/mime.types</code> 拷贝到开发板根文件系统的 <code>/etc</code> 下 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cp</span> /etc/mime.types /rootfsmy/etc/</span><br></pre></td></tr></table></figure></li>
+<li>将主页index.html拷贝到www目录下</li>
+<li>运行 boa <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./boa <span class="comment"># /etc/boa/boa</span></span><br></pre></td></tr></table></figure>
+<img src="/../image/boaTest.png" alt="Alt text"></li>
+</ol>
+<h1 id="boa-配置文件参数解释"><a href="#boa-配置文件参数解释" class="headerlink" title="boa 配置文件参数解释"></a>boa 配置文件参数解释</h1><ol>
+<li><code>boa</code> 的配置文件是 <code>/etc/boa/boa.conf</code>。</li>
+<li><code>Port</code>：boa服务器监听的端口，默认的端口是80。如果端口小于1024，则必须是root用户启动服务器。</li>
+<li><code>Listen</code>：绑定的ip地址。不使用这个参数时，将绑定所有的地址。</li>
+<li><code>User</code>：连接到服务器的客户端的身份，可以是用户名或UID。</li>
+<li><code>Group</code>：连接到服务器的客户端的组，可以是组名或GID。</li>
+<li><code>ServerAdmin</code>：服务器出故障时要通知的邮箱地址。</li>
+<li><code>ErrorLog</code>：指定错误日志文件。如果路径没有以“&#x2F;”开始，则相对于ServerRoot路径。没有配置时默认的文件是&#x2F;dev&#x2F;stderr。若不想记录日志，指定文件为&#x2F;dev&#x2F;null。</li>
+<li><code>AccessLog</code>：设置存取日志文件，与ErrorLog类似。UseLocaltime：设置使用本地时间，使用UTC时注释这个参数。这个参数没有值。</li>
+<li><code>VerboseCGILogs</code>：在错误日志文件中记录CGI启动和停止时间，若不记录，注释这个参数。这个参数没有值。</li>
+<li><code>ServerName</code>：指定服务器的名称，当客户端使用gethostname + gethostbyname时返回给客户端。</li>
+<li><code>VirtualHost</code>：虚拟主机开关。使用此参数，则会在DocumentRoot设定的目录添加一个ip地址作为新的DocumentRoot来 处理客户端的请求。如DocumentRoot设置为&#x2F;var&#x2F;www，<a target="_blank" rel="noopener" href="http://localhost/">http://localhost/</a> 则转换成&#x2F;var&#x2F;www&#x2F;127.0.0.1&#x2F;，若注释此参数，则为&#x2F;var&#x2F;www&#x2F;。</li>
+<li>   <code>DocumentRoot</code>：HTML文件的根目录（也就是网站的目录）。</li>
+<li>   <code>UserDir</code>：指定用户目录。</li>
+<li>   <code>DirectoryIndex</code>：指定预生成目录信息的文件，注释此变量将使用DirectoryMaker变量。这个变量也就是设置默认主页的文件名。</li>
+<li>   <code>DirectoryMaker</code>：指定用于生成目录的程序，注释此变量将不允许列目录。</li>
+<li>   <code>KeepAliveMax</code>：每个连接允许的请求数量。如果将此值设为” 0 “，将不限制请求的数目 </li>
+<li>   <code>KeepAliveTimeOut</code>：在关闭持久连接前等待下一个请求的秒数。（秒）。</li>
+<li>   <code>MimeTypes</code>：设置包含mimetypes信息的文件，一般是&#x2F;etc&#x2F;mime.types。</li>
+<li>   <code>DefaultType</code>：默认的mimetype类型，一般是text&#x2F;html。</li>
+<li>   <code>CGIPath</code>：相当于给CGI程序使用的$PATH变量。</li>
+<li>   <code>Aliases</code>：指定路径的别名。</li>
+<li>   <code>ScriptAlias</code>：指定脚本路径的虚拟路径。</li>
+</ol>
+<h1 id="BOA-服务器错误解决"><a href="#BOA-服务器错误解决" class="headerlink" title="BOA 服务器错误解决"></a>BOA 服务器错误解决</h1><h2 id="error-pasting-t-and-does-not-give-a-valid-preprocessing-token"><a href="#error-pasting-t-and-does-not-give-a-valid-preprocessing-token" class="headerlink" title="error: pasting &quot;t&quot; and &quot;-&gt;&quot; does not give a valid preprocessing token"></a><code>error: pasting &quot;t&quot; and &quot;-&gt;&quot; does not give a valid preprocessing token</code></h2><p>在 make 的时候出现这个错误，<br>修改 <code>src/compat.h</code></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// #define TIMEZONE_OFFSET(foo) foo##-&gt;tm_gmtoff</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> TIMEZONE_OFFSET(foo) (foo)-&gt;tm_gmtoff</span></span><br></pre></td></tr></table></figure>
+<p>然后 <code>make clean</code> 后重新 <code>make</code> 即可。</p>
+<h2 id="log-c-73-unable-to-dup2-the-error-log-Bad-file-descriptor"><a href="#log-c-73-unable-to-dup2-the-error-log-Bad-file-descriptor" class="headerlink" title="log.c:73 - unable to dup2 the error log: Bad file descriptor"></a><code>log.c:73 - unable to dup2 the error log: Bad file descriptor</code></h2><p>在运行 boa 的时候出现这个错误，<br>修改 <code>src/log.c</code></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// if (dup2(error_log, STDERR_FILENO) == -1) &#123;</span></span><br><span class="line"><span class="comment">//      DIE(&quot;unable to dup2 the error log&quot;);</span></span><br><span class="line"><span class="comment">// &#125;</span></span><br><span class="line"><span class="comment">// 注释掉上面的代码</span></span><br><span class="line"><span class="comment">/*  if (dup2(error_log, STDERR_FILENO) == -1) &#123;</span></span><br><span class="line"><span class="comment">        DIE(&quot;unable to dup2 the error log&quot;);</span></span><br><span class="line"><span class="comment">&#125; */</span></span><br></pre></td></tr></table></figure>
+<h2 id="boa-c-211-getpwuid-No-such-file-or-directory"><a href="#boa-c-211-getpwuid-No-such-file-or-directory" class="headerlink" title="boa.c:211 - getpwuid: No such file or directory"></a><code>boa.c:211 - getpwuid: No such file or directory</code></h2><p>在运行 boa 的时候出现这个错误，<br>修改 <code>src/boa.c</code></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// if (passwdbuf == NULL) &#123;</span></span><br><span class="line"><span class="comment">//      DIE(”getpwuid”);</span></span><br><span class="line"><span class="comment">// &#125;</span></span><br><span class="line"><span class="comment">// if (initgroups(passwdbuf-&gt;pw_name, passwdbuf-&gt;pw_gid) == -1) &#123;</span></span><br><span class="line"><span class="comment">//      DIE(”initgroups”);</span></span><br><span class="line"><span class="comment">// &#125;</span></span><br><span class="line"><span class="comment">// 注释掉上面的代码</span></span><br><span class="line"><span class="comment">/* if (passwdbuf == NULL) &#123;</span></span><br><span class="line"><span class="comment">    DIE(”getpwuid”);</span></span><br><span class="line"><span class="comment">&#125;</span></span><br><span class="line"><span class="comment">if (initgroups(passwdbuf-&gt;pw_name, passwdbuf-&gt;pw_gid) == -1) &#123;</span></span><br><span class="line"><span class="comment">    DIE(”initgroups”);</span></span><br><span class="line"><span class="comment">&#125; */</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="boa-c-228-icky-Linux-kernel-bug-No-such-file-or-directory"><a href="#boa-c-228-icky-Linux-kernel-bug-No-such-file-or-directory" class="headerlink" title="boa.c:228 - icky Linux kernel bug!: No such file or directory"></a><code>boa.c:228 - icky Linux kernel bug!: No such file or directory</code></h2><p>在运行 boa 的时候出现这个错误，<br>修改 <code>src/boa.c</code></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// if(setuid(0) != -1) &#123;</span></span><br><span class="line"><span class="comment">//     DIE(”icky Linux kernel bug!”);</span></span><br><span class="line"><span class="comment">// &#125;</span></span><br><span class="line"><span class="comment">// 注释掉上面的代码</span></span><br><span class="line"><span class="comment">/* if(setuid(0) != -1) &#123;</span></span><br><span class="line"><span class="comment">    DIE(”icky Linux kernel bug!”);</span></span><br><span class="line"><span class="comment">&#125; */</span></span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/03/10/SQLite3%20%E7%A7%BB%E6%A4%8D/" rel="prev" title="SQLite3 移植">
+      <i class="fa fa-chevron-left"></i> SQLite3 移植
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/04/10/IOModel/" rel="next" title="IO 模型">
+      IO 模型 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#BOA-%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="nav-number">1.</span> <span class="nav-text">BOA 服务器</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#BOA-%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%A7%BB%E6%A4%8D"><span class="nav-number">2.</span> <span class="nav-text">BOA 服务器移植</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#BOA-%E6%9C%8D%E5%8A%A1%E5%99%A8%E9%85%8D%E7%BD%AE"><span class="nav-number">3.</span> <span class="nav-text">BOA 服务器配置</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#BOA-%E6%9C%8D%E5%8A%A1%E5%99%A8%E6%B5%8B%E8%AF%95"><span class="nav-number">4.</span> <span class="nav-text">BOA 服务器测试</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#boa-%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E5%8F%82%E6%95%B0%E8%A7%A3%E9%87%8A"><span class="nav-number">5.</span> <span class="nav-text">boa 配置文件参数解释</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#BOA-%E6%9C%8D%E5%8A%A1%E5%99%A8%E9%94%99%E8%AF%AF%E8%A7%A3%E5%86%B3"><span class="nav-number">6.</span> <span class="nav-text">BOA 服务器错误解决</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#error-pasting-t-and-does-not-give-a-valid-preprocessing-token"><span class="nav-number">6.1.</span> <span class="nav-text">error: pasting &quot;t&quot; and &quot;-&gt;&quot; does not give a valid preprocessing token</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#log-c-73-unable-to-dup2-the-error-log-Bad-file-descriptor"><span class="nav-number">6.2.</span> <span class="nav-text">log.c:73 - unable to dup2 the error log: Bad file descriptor</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#boa-c-211-getpwuid-No-such-file-or-directory"><span class="nav-number">6.3.</span> <span class="nav-text">boa.c:211 - getpwuid: No such file or directory</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#boa-c-228-icky-Linux-kernel-bug-No-such-file-or-directory"><span class="nav-number">6.4.</span> <span class="nav-text">boa.c:228 - icky Linux kernel bug!: No such file or directory</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">XiaoMingMingBai</p>
+  <div class="site-description" itemprop="description">选择有时候比努力更重要</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">6</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">XiaoMingMingBai</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">16k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">30 分钟</span>
+</div>
+  <div class="powered-by">
+    <!--由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动 -->
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
