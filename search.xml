@@ -3,7 +3,7 @@
   <entry>
     <title>IO 模型</title>
     <url>/2023/04/10/IOModel/</url>
-    <content><![CDATA[<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>本文包含4种 <code>IO模型</code> 的介绍、实现原理分层解析、驱动编写思路和代码实现、以及应用层使用方法。</p>
+    <content><![CDATA[<p>本文包含4种 <code>IO模型</code> 的介绍、实现原理分层解析、驱动编写思路和代码实现、以及应用层使用方法。</p>
 <span id="more"></span>
 
 <h1 id="IO模型的分析"><a href="#IO模型的分析" class="headerlink" title="IO模型的分析"></a>IO模型的分析</h1><p>IO 模型是指应用程序在调用 <code>read</code> 函数的时候，如果数据没有准备好，此时进程会发生什么样的状态转换，以及什么时候会返回。在Linux中有五种IO模型，分别是阻塞IO模型，非阻塞IO模型，IO多路复用IO模型，信号驱动IO模型，异步IO模型。下面是对它的分析<br>以下内容仅为我的个人积累，详细内容请参考官方文档和相关书籍。</p>
@@ -55,7 +55,7 @@
   <entry>
     <title>Git &amp; Github 的使用</title>
     <url>/2021/05/10/git/</url>
-    <content><![CDATA[<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>本文包含 <code>Git</code> 和 <code>Github</code> 的介绍和使用方法，对于不了解Git和Github的同志，可以快速入门享受Git和Github的乐趣。   </p>
+    <content><![CDATA[<p>本文包含 <code>Git</code> 和 <code>Github</code> 的介绍和使用方法，对于不了解Git和Github的同志，可以快速入门享受Git和Github的乐趣。   </p>
 <span id="more"></span>
 
 <h1 id="Git-Github"><a href="#Git-Github" class="headerlink" title="Git &amp; Github"></a>Git &amp; Github</h1><p>git 和 github 的合作就像是一个人和他的硬盘的关系，git 是一个版本控制系统，它是为了更好地管理和跟踪软件代码的变化而开发的。版本控制系统的主要目标是记录文件的历史变化，允许多人协同开发，并且能够轻松回滚到之前的代码状态。而 github 是一个基于 git 的代码托管平台和开发者社交网络。它提供了一个云端的代码仓库，允许开发者将他们的项目代码存储在云端，并通过 git 进行版本控制。github 允许开发者在云端进行代码管理，方便地与其他开发者协作、共享代码和追踪项目的变化。<br>以下内容仅为我的个人积累，详细内容请参考 <a href="https://git-scm.com/doc">Git 官方文档</a> 和 <a href="https://docs.github.com/en">Github 官方文档</a>。</p>
@@ -92,29 +92,9 @@
 ]]></content>
   </entry>
   <entry>
-    <title>Git &amp; Github 的使用</title>
-    <url>/2021/01/10/hello-world/</url>
-    <content><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<span id="more"></span>
-
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
-]]></content>
-  </entry>
-  <entry>
     <title>sys_select 剖析</title>
-    <url>/2020/02/10/sys_select%E5%86%85%E9%83%A8%E5%AE%9E%E7%8E%B0/</url>
-    <content><![CDATA[<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>本文包含对 <code>sys_select</code> 从内核层面的实现进行剖析</p>
+    <url>/2022/07/10/sys_select%E5%86%85%E9%83%A8%E5%AE%9E%E7%8E%B0/</url>
+    <content><![CDATA[<p>本文包含对 <code>sys_select</code> 从内核层面的实现进行剖析</p>
 <span id="more"></span>
 
 <h1 id="函数"><a href="#函数" class="headerlink" title="函数"></a>函数</h1><p><code>sys_select</code> 函数是一个系统调用，它的作用是监视一组文件描述符，并在这组文件描述符中的任何一个上发生变化时通知进程。下面对它进行分析<br>以下内容仅为我的个人积累，详细内容请参考官方文档和相关书籍。</p>
@@ -127,7 +107,7 @@
   <entry>
     <title>BOA 服务器移植</title>
     <url>/2023/01/15/BOA%20%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%A7%BB%E6%A4%8D/</url>
-    <content><![CDATA[<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>本文包含 <code>BOA</code> 服务器的介绍、移植、配置、参数介绍、错误解决等。</p>
+    <content><![CDATA[<p>本文包含 <code>BOA</code> 服务器的介绍、移植、配置、参数介绍、错误解决等。</p>
 <span id="more"></span>
 
 <h1 id="BOA-服务器"><a href="#BOA-服务器" class="headerlink" title="BOA 服务器"></a>BOA 服务器</h1><p>BOA 是一个小型的 HTTP 服务器，它的特点是占用资源少，运行速度快，是嵌入式 Linux 系统的首选 HTTP 服务器。<br>以下内容仅为我的个人积累，详细内容请参考 <a href="http://www.boa.org/">BOA 官方文档</a>。</p>
@@ -205,7 +185,7 @@
   <entry>
     <title>SQLite3 移植</title>
     <url>/2023/01/22/SQLite3%20%E7%A7%BB%E6%A4%8D/</url>
-    <content><![CDATA[<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>本文包含 <code>SQLite3</code> 的介绍、移植过程、注意事项和使用方式。</p>
+    <content><![CDATA[<p>本文包含 <code>SQLite3</code> 的介绍、移植过程、注意事项和使用方式。</p>
 <span id="more"></span>
 
 <h1 id="SQLite3"><a href="#SQLite3" class="headerlink" title="SQLite3"></a>SQLite3</h1><p>SQLite3 是一个开源的嵌入式关系数据库，我们可以将其嵌入到我们的应用程序中，从而实现对数据的管理。SQLite3 的源代码可以从 <a href="https://www.sqlite.org/index.html">SQLite3 官网</a> 下载。<br>以下内容仅为对我所做项目移植的记录，详细内容请参考 <a href="https://www.sqlite.org/docs.html">SQLite3 官方文档</a>。</p>
@@ -245,7 +225,7 @@
   <entry>
     <title>子系统</title>
     <url>/2023/03/10/%E5%AD%90%E7%B3%BB%E7%BB%9F/</url>
-    <content><![CDATA[<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>本文包含 <code>IIC</code> <code>SPI</code> <code>UART</code> 总线协议的介绍和使用方法。以及 <code>GPIO</code> <code>IIC</code> <code>SPI</code> 子系统的解析，使用方法，驱动编写思路，代码实现和应用层使用方法，</p>
+    <content><![CDATA[<p>本文包含 <code>IIC</code> <code>SPI</code> <code>platform</code> 总线的介绍和使用方法。以及 <code>GPIO</code> <code>IIC</code> <code>SPI</code> 子系统的解析，使用方法，驱动编写思路，代码实现和应用层使用方法，</p>
 <span id="more"></span>
 
 <h1 id="总线协议和子系统"><a href="#总线协议和子系统" class="headerlink" title="总线协议和子系统"></a>总线协议和子系统</h1><h2 id="总线协议"><a href="#总线协议" class="headerlink" title="总线协议"></a>总线协议</h2><h2 id="子系统"><a href="#子系统" class="headerlink" title="子系统"></a>子系统</h2><h1 id="总线协议-1"><a href="#总线协议-1" class="headerlink" title="总线协议"></a>总线协议</h1><h2 id="IIC"><a href="#IIC" class="headerlink" title="IIC"></a>IIC</h2><h2 id="SPI"><a href="#SPI" class="headerlink" title="SPI"></a>SPI</h2><h2 id="UART"><a href="#UART" class="headerlink" title="UART"></a>UART</h2><h1 id="子系统-1"><a href="#子系统-1" class="headerlink" title="子系统"></a>子系统</h1><h2 id="GPIO"><a href="#GPIO" class="headerlink" title="GPIO"></a>GPIO</h2><h2 id="IIC-1"><a href="#IIC-1" class="headerlink" title="IIC"></a>IIC</h2><h2 id="SPI-1"><a href="#SPI-1" class="headerlink" title="SPI"></a>SPI</h2>]]></content>
@@ -253,7 +233,7 @@
   <entry>
     <title>系统移植</title>
     <url>/2023/01/10/%E7%B3%BB%E7%BB%9F%E7%A7%BB%E6%A4%8D/</url>
-    <content><![CDATA[<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>本文包含 <code>bootloader</code> 和 <code>kernel</code> 的详细解析和移植过程，<code>rootfs</code> 的介绍、语法、编写和移植。</p>
+    <content><![CDATA[<p>本文包含 <code>bootloader</code> 和 <code>kernel</code> 的详细解析和移植过程，<code>rootfs</code> 的介绍、语法、编写和移植。</p>
 <h1 id="系统移植"><a href="#系统移植" class="headerlink" title="系统移植"></a>系统移植</h1><h1 id="bootloader"><a href="#bootloader" class="headerlink" title="bootloader"></a>bootloader</h1><h1 id="kernel"><a href="#kernel" class="headerlink" title="kernel"></a>kernel</h1><h1 id="rootfs"><a href="#rootfs" class="headerlink" title="rootfs"></a>rootfs</h1>]]></content>
   </entry>
 </search>
