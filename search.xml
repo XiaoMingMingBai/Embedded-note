@@ -60,7 +60,7 @@
 
 <h1 id="Git-Github"><a href="#Git-Github" class="headerlink" title="Git &amp; Github"></a>Git &amp; Github</h1><p>git 和 github 的合作就像是一个人和他的硬盘的关系，git 是一个版本控制系统，它是为了更好地管理和跟踪软件代码的变化而开发的。版本控制系统的主要目标是记录文件的历史变化，允许多人协同开发，并且能够轻松回滚到之前的代码状态。而 github 是一个基于 git 的代码托管平台和开发者社交网络。它提供了一个云端的代码仓库，允许开发者将他们的项目代码存储在云端，并通过 git 进行版本控制。github 允许开发者在云端进行代码管理，方便地与其他开发者协作、共享代码和追踪项目的变化。<br>以下内容仅为我的个人积累，详细内容请参考 <a href="https://git-scm.com/doc">Git 官方文档</a> 和 <a href="https://docs.github.com/en">Github 官方文档</a>。</p>
 <h1 id="Git"><a href="#Git" class="headerlink" title="Git"></a>Git</h1><p>Git是一个版本控制系统，使用它就可以对本地的代码进行版本管理，比如可以回滚到之前的代码状态、以及查看代码的修改历史、设置标签或者分支等等。</p>
-<h2 id="Git的使用"><a href="#Git的使用" class="headerlink" title="Git的使用"></a>Git的使用</h2><ol>
+<h2 id="Git的基本使用"><a href="#Git的基本使用" class="headerlink" title="Git的基本使用"></a>Git的基本使用</h2><ol>
 <li>安装 <strong><a href="https://git-scm.com/downloads">Git</a></strong>  </li>
 <li>在本第新建一个文件夹，然后右键选择<code>Git Bash Here</code></li>
 <li>配置用户信息<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git config --global user.name <span class="string">&quot;Your Name&quot;</span></span><br><span class="line">git config --global user.email <span class="string">&quot;Your Email&quot;</span></span><br></pre></td></tr></table></figure></li>
@@ -71,7 +71,7 @@
 <li>查看分支 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git <span class="built_in">log</span> <span class="comment"># 查看提交日志</span></span><br><span class="line">git status <span class="comment"># 查看状态</span></span><br><span class="line">git diff <span class="comment"># 查看修改内容</span></span><br></pre></td></tr></table></figure></li>
 </ol>
 <h1 id="Github"><a href="#Github" class="headerlink" title="Github"></a>Github</h1><p>GitHub是一个基于Git的代码托管平台和开发者社交网络。使用它可以让我们的代码托管在云端，这样就可以与其他开发者合作开发项目等等。</p>
-<h2 id="Github的使用"><a href="#Github的使用" class="headerlink" title="Github的使用"></a>Github的使用</h2><ol>
+<h2 id="Github的基本使用"><a href="#Github的基本使用" class="headerlink" title="Github的基本使用"></a>Github的基本使用</h2><ol>
 <li>注册 <strong><a href="https://github.com/">Github</a></strong></li>
 <li>创建仓库<br>登录GitHub后，点击页面右上角的加号图标，选择 <code>&quot;New Repository&quot;</code> 创建一个新的远程仓库。给仓库取一个名称，并设置仓库的可见性（公开或私有）。</li>
 <li>关联本地仓库，在这里有两种关联，一种是 <code>HTTPS</code>，一种是 <code>SSH</code>。  <h4 id="HTTPS"><a href="#HTTPS" class="headerlink" title="HTTPS"></a>HTTPS</h4><ol>
@@ -89,7 +89,10 @@
 <li>拉取远程仓库 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git pull origin master <span class="comment"># 将远程仓库的 master 分支合并到本地仓库的 master 分支</span></span><br></pre></td></tr></table></figure></li>
 <li>创建 Pull Request<br>如果您想将您的更改合并到项目的主分支中，您可以在GitHub上创建一个Pull Request。在项目页面中，点击”Pull Request”按钮，然后选择”New Pull Request”创建一个新的拉取请求，并进行描述和讨论。</li>
 </ol>
-]]></content>
+<h1 id="git-github-的使用"><a href="#git-github-的使用" class="headerlink" title="git &amp; github 的使用"></a>git &amp; github 的使用</h1><h2 id="Git-基础"><a href="#Git-基础" class="headerlink" title="Git 基础"></a>Git 基础</h2><h3 id="获取-Git-仓库"><a href="#获取-Git-仓库" class="headerlink" title="获取 Git 仓库"></a>获取 Git 仓库</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git init <span class="comment"># 初始化仓库</span></span><br><span class="line">git add *.c <span class="comment"># 添加所有 .c 文件</span></span><br><span class="line">git add LICENSE <span class="comment"># 添加 LICENSE 文件</span></span><br><span class="line">git commit -m <span class="string">&#x27;initial project version&#x27;</span> <span class="comment"># 提交到仓库 message</span></span><br><span class="line">git <span class="built_in">clone</span> https://github.com/libgit2/libgit2 <span class="comment"># 克隆远程仓库</span></span><br><span class="line">git <span class="built_in">clone</span> https://github.com/libgit2/libgit2 mylibgit <span class="comment"># 在当前目录下新建一个文件夹并初始化并克隆远程仓库</span></span><br></pre></td></tr></table></figure>
+<h3 id="记录每次更新到仓库"><a href="#记录每次更新到仓库" class="headerlink" title="记录每次更新到仓库"></a>记录每次更新到仓库</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git status <span class="comment"># 查看状态</span></span><br><span class="line">git status -s <span class="comment"># 简短输出 short</span></span><br><span class="line">git diff <span class="comment"># 比较工作目录中当前文件和暂存区域快照之间的差异</span></span><br><span class="line">git diff --staged <span class="comment"># 比较暂存区域和最后一次提交的差异</span></span><br><span class="line">git diff --cached <span class="comment"># 查看已经暂存起来的变化（ --staged 和 --cached 是同义词）</span></span><br><span class="line">git commit <span class="comment"># 提交到仓库并打开编辑器输入提交说明</span></span><br><span class="line">git commit -m <span class="string">&#x27;message&#x27;</span> <span class="comment"># 将提交信息和命令放在同一行</span></span><br><span class="line">git commit -a -m <span class="string">&#x27;message&#x27;</span> <span class="comment"># 跳过使用暂存区域，直接将所有已经跟踪过的文件暂存起来一并提交</span></span><br><span class="line">git <span class="built_in">rm</span> PROJECTS.md <span class="comment"># 从暂存区域移除文件</span></span><br><span class="line">git <span class="built_in">rm</span> -f PROJECTS.md <span class="comment"># 强制从暂存区域移除文件 force</span></span><br><span class="line">git <span class="built_in">rm</span> --cached README <span class="comment"># 从暂存区域移除文件但不删除文件</span></span><br><span class="line">git <span class="built_in">rm</span> <span class="built_in">log</span>/\*.<span class="built_in">log</span> <span class="comment"># 删除log/目录下所有.log文件</span></span><br><span class="line">git <span class="built_in">rm</span> \*~ <span class="comment"># 删除所有名字以~结尾的文件</span></span><br><span class="line">git <span class="built_in">mv</span> file_from file_to <span class="comment"># 对文件改名 rm + add</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="Git-分支"><a href="#Git-分支" class="headerlink" title="Git 分支"></a>Git 分支</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git branch testing <span class="comment"># 创建分支</span></span><br><span class="line">git <span class="built_in">log</span> --oneline --decorate <span class="comment"># 查看各个分支当前所指的对象，由 --decorate 选项可以看到每一个分支的最后一次提交</span></span><br><span class="line">git <span class="built_in">log</span> --oneline --decorate --graph --all <span class="comment"># 输出你的提交历史、各个分支的指向以及项目的分支分叉情况</span></span><br><span class="line">git checkout testing <span class="comment"># 切换分支</span></span><br><span class="line">git checkout -b iss53 <span class="comment"># 创建并切换到 iss53 分支 branch</span></span><br><span class="line">git merge hotfix <span class="comment"># 合并 hotfix 分支到当前分支</span></span><br><span class="line">git branch -d hotfix <span class="comment"># 删除 hotfix 分支 delete</span></span><br><span class="line">git mergetool <span class="comment"># 合并冲突可视化工具</span></span><br></pre></td></tr></table></figure>]]></content>
   </entry>
   <entry>
     <title>sys_select 剖析</title>
@@ -110,7 +113,8 @@
     <content><![CDATA[<p>本文包含 <code>BOA</code> 服务器的介绍、移植、配置、参数介绍、错误解决等。</p>
 <span id="more"></span>
 
-<h1 id="BOA-服务器"><a href="#BOA-服务器" class="headerlink" title="BOA 服务器"></a>BOA 服务器</h1><p>BOA 是一个小型的 HTTP 服务器，它的特点是占用资源少，运行速度快，是嵌入式 Linux 系统的首选 HTTP 服务器。<br>以下内容仅为我的个人积累，详细内容请参考 <a href="http://www.boa.org/">BOA 官方文档</a>。</p>
+<p>以下内容仅为我的个人积累，详细内容请参考 <a href="http://www.boa.org/">BOA 官方文档</a>。</p>
+<h1 id="BOA-服务器"><a href="#BOA-服务器" class="headerlink" title="BOA 服务器"></a>BOA 服务器</h1><p>BOA 是一个小型的 HTTP 服务器，它的特点是占用资源少，运行速度快，是嵌入式 Linux 系统的首选 HTTP 服务器。   </p>
 <h1 id="BOA-服务器移植"><a href="#BOA-服务器移植" class="headerlink" title="BOA 服务器移植"></a>BOA 服务器移植</h1><ol>
 <li><p>解压源码</p>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">tar xvf boa-0.94.13.tar.tar</span><br><span class="line"><span class="built_in">cd</span> boa-0.94.13</span><br></pre></td></tr></table></figure></li>
@@ -225,15 +229,49 @@
   <entry>
     <title>子系统</title>
     <url>/2023/03/10/%E5%AD%90%E7%B3%BB%E7%BB%9F/</url>
-    <content><![CDATA[<p>本文包含 <code>IIC</code> <code>SPI</code> <code>platform</code> 总线的介绍和使用方法。以及 <code>GPIO</code> <code>IIC</code> <code>SPI</code> 子系统的解析，使用方法，驱动编写思路，代码实现和应用层使用方法，</p>
+    <content><![CDATA[<p>本文包含 <code>GPIO</code> <code>IIC</code> <code>SPI</code> 子系统的解析，使用方法，驱动编写思路，代码实现和应用层使用方法，</p>
 <span id="more"></span>
 
-<h1 id="总线协议和子系统"><a href="#总线协议和子系统" class="headerlink" title="总线协议和子系统"></a>总线协议和子系统</h1><h2 id="总线协议"><a href="#总线协议" class="headerlink" title="总线协议"></a>总线协议</h2><h2 id="子系统"><a href="#子系统" class="headerlink" title="子系统"></a>子系统</h2><h1 id="总线协议-1"><a href="#总线协议-1" class="headerlink" title="总线协议"></a>总线协议</h1><h2 id="IIC"><a href="#IIC" class="headerlink" title="IIC"></a>IIC</h2><h2 id="SPI"><a href="#SPI" class="headerlink" title="SPI"></a>SPI</h2><h2 id="UART"><a href="#UART" class="headerlink" title="UART"></a>UART</h2><h1 id="子系统-1"><a href="#子系统-1" class="headerlink" title="子系统"></a>子系统</h1><h2 id="GPIO"><a href="#GPIO" class="headerlink" title="GPIO"></a>GPIO</h2><h2 id="IIC-1"><a href="#IIC-1" class="headerlink" title="IIC"></a>IIC</h2><h2 id="SPI-1"><a href="#SPI-1" class="headerlink" title="SPI"></a>SPI</h2>]]></content>
+
+<h1 id="子系统"><a href="#子系统" class="headerlink" title="子系统"></a>子系统</h1><h2 id="GPIO"><a href="#GPIO" class="headerlink" title="GPIO"></a>GPIO</h2><h2 id="IIC"><a href="#IIC" class="headerlink" title="IIC"></a>IIC</h2><h2 id="SPI"><a href="#SPI" class="headerlink" title="SPI"></a>SPI</h2>]]></content>
   </entry>
   <entry>
     <title>系统移植</title>
     <url>/2023/01/10/%E7%B3%BB%E7%BB%9F%E7%A7%BB%E6%A4%8D/</url>
-    <content><![CDATA[<p>本文包含 <code>bootloader</code> 和 <code>kernel</code> 的详细解析和移植过程，<code>rootfs</code> 的介绍、语法、编写和移植。</p>
+    <content><![CDATA[<p>本文包含 <code>bootloader</code> 、<code>kernel</code> 、<code>rootfs</code> 的解析编译移植，<code>rootfs</code> 的介绍、语法、编写，<code>kernel</code> 的裁剪。</p>
+<span id="more"></span>
+
 <h1 id="系统移植"><a href="#系统移植" class="headerlink" title="系统移植"></a>系统移植</h1><h1 id="bootloader"><a href="#bootloader" class="headerlink" title="bootloader"></a>bootloader</h1><h1 id="kernel"><a href="#kernel" class="headerlink" title="kernel"></a>kernel</h1><h1 id="rootfs"><a href="#rootfs" class="headerlink" title="rootfs"></a>rootfs</h1>]]></content>
+  </entry>
+  <entry>
+    <title>总线协议</title>
+    <url>/2023/01/14/%E6%80%BB%E7%BA%BF%E5%8D%8F%E8%AE%AE/</url>
+    <content><![CDATA[<p>本文包括 <code>UART</code> <code>IIC</code> <code>SCCB</code> <code>SPI</code> 总线协议的解析，使用方法，驱动编写思路。</p>
+<span id="more"></span>
+
+<h1 id="IIC"><a href="#IIC" class="headerlink" title="IIC"></a>IIC</h1><p>一种<strong>同步串行</strong>的<strong>半双工</strong>总线，使用一根数据线<strong>SDA</strong>和一根时钟线<strong>SCL</strong>来传输数据，具有结构简单，接口连接方便，成本低的特点，速率再100kbps-400kbps之间。</p>
+<h2 id="连接方式"><a href="#连接方式" class="headerlink" title="连接方式"></a>连接方式</h2><p><img src="/../image/IIClink.png" alt="IIC link"></p>
+<h2 id="通信方式"><a href="#通信方式" class="headerlink" title="通信方式"></a>通信方式</h2><h3 id="起始信号-和-终止信号"><a href="#起始信号-和-终止信号" class="headerlink" title="起始信号 和 终止信号"></a>起始信号 和 终止信号</h3><p>在时钟线为<strong>高电平</strong>时，数据线<strong>由高电平跳变到低</strong>电平，表示起始信号。<br>在时钟线为<strong>高电平</strong>时，数据线<strong>由低电平跳变到高</strong>电平，表示终止信号。<br><img src="/../image/IICstart.png" alt="IIC start"></p>
+<h3 id="数据"><a href="#数据" class="headerlink" title="数据"></a>数据</h3><p>数据传输时，在时钟线为高电平时，要求数据线的数据保持稳定，只有在时钟线为低电平时，数据线的数据才能发生变化。一个时钟周期完成1bit数据的传输。<br>每一个字节必须保证是<strong>8</strong>位长度。数据传送时，先传送最<strong>高位</strong>（MSB），每一个被传送的字节后面都必须跟随一位<strong>应答位</strong>（即一帧共有9位）。<br><img src="/../image/IICdata.png" alt="IIC data"></p>
+<h3 id="应答"><a href="#应答" class="headerlink" title="应答"></a>应答</h3><p>在时钟线为高电平时，数据线由高电平跳变到低电平，表示应答位。<br>在时钟线为高电平时，数据线由低电平跳变到高电平，表示非应答位。</p>
+<h3 id="寻址"><a href="#寻址" class="headerlink" title="寻址"></a>寻址</h3><p>IIC总线支持7、8、10位寻址，主机在起始信号后必须传送一个从机的地址（7位），第<strong>8位</strong>是数据的传送方向位（R&#x2F;W），用“0”表示主机发送数据（W），“1”表示主机接收数据（R）。总线上的每个从机都将这7位地址码与自己的地址进行比较，如果相同，则认为自己被主机寻址，根据R&#x2F;W位将自己定为发送器或接收器。<br><img src="/../image/IIC7.png" alt="IIC 7"><br>8位寻址和7位相似，只不过厂商在提供地址时，将第八位读写位包含在了地址中，所以前7位才是真正的地址。<br><img src="/../image/IIC8.png" alt="IIC 8"><br>10位寻址略有不同，10位地址需要分两帧发送，其中第一帧的前5位是固定的<code>11110</code>,后跟地址的高两位，最后一位为读写位，第二帧为地址的低8位。<br><img src="/../image/IIC10.png" alt="IIC 10"></p>
+<h2 id="数据读写"><a href="#数据读写" class="headerlink" title="数据读写"></a>数据读写</h2><p><strong>写操作</strong>：主机发送起始信号，发送从机地址和写信号，从机应答，主机发送数据，从机应答，主机发送终止信号。<br><code>start + (7bit从机地址+1bit写0) + ack + (8bit/16bit寄存器地址) + ack + (8bit/16bit数据) + ack + stop</code><br><img src="/../image/IICwrite.png" alt="IIC write"><br><strong>读操作</strong>：主机发送起始信号，发送从机地址和写信号，从机应答，主机再次发送起始信号，发送从机地址和读信号，应答，主机接受数据，不给应答，主机发送终止信号。<br><img src="/../image/IICread.png" alt="IIC read"></p>
+<h2 id="速率"><a href="#速率" class="headerlink" title="速率"></a>速率</h2><p>100KHz 高速、400KHz全速、3.4MHz高速</p>
+<h2 id="特点"><a href="#特点" class="headerlink" title="特点"></a>特点</h2><ul>
+<li>串行通信，只需要两根线，数据线和时钟线</li>
+<li>半双工通信，数据只能单向传输</li>
+<li>串行数据传输，具备应答机制。</li>
+</ul>
+]]></content>
+  </entry>
+  <entry>
+    <title>视频流移植</title>
+    <url>/2023/01/25/%E8%A7%86%E9%A2%91%E6%B5%81%E7%A7%BB%E6%A4%8D/</url>
+    <content><![CDATA[<p>本文包含确前置准备确认、内核驱动移植、<code>mjpeg-streamer</code> 移植、移植中遇到的错误和可能遇到的错误、以及解决方案、配置网页显示等内容。</p>
+<span id="more"></span>
+
+
+
+]]></content>
   </entry>
 </search>
