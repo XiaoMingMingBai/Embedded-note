@@ -28,7 +28,7 @@
 <meta property="og:description" content="本文包含确前置准备确认、内核驱动移植、mjpeg-streamer 移植、移植中遇到的错误和可能遇到的错误、以及解决方案、配置网页显示等内容。">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2023-01-25T14:07:08.000Z">
-<meta property="article:modified_time" content="2023-08-09T06:07:53.099Z">
+<meta property="article:modified_time" content="2023-08-12T06:34:27.148Z">
 <meta property="article:author" content="XiaoMingMingBai">
 <meta name="twitter:card" content="summary">
 
@@ -215,7 +215,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2023-08-09 14:07:53" itemprop="dateModified" datetime="2023-08-09T14:07:53+08:00">2023-08-09</time>
+                <time title="修改时间：2023-08-12 14:34:27" itemprop="dateModified" datetime="2023-08-12T14:34:27+08:00">2023-08-12</time>
               </span>
 
           <br>
@@ -224,14 +224,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>70</span>
+              <span>2.7k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>1 分钟</span>
+              <span>5 分钟</span>
             </span>
 
         </div>
@@ -246,9 +246,47 @@
         <p>本文包含确前置准备确认、内核驱动移植、<code>mjpeg-streamer</code> 移植、移植中遇到的错误和可能遇到的错误、以及解决方案、配置网页显示等内容。</p>
 <span id="more"></span>
 
-
-
-
+<h1 id="MJPG"><a href="#MJPG" class="headerlink" title="MJPG"></a>MJPG</h1><p><strong>MJPG</strong> 是 <strong>MJPEG</strong> 的缩写,但是 <strong>MJPEG</strong> 还可以表示文件格式扩展名，全名为 **”Motion Joint Photographic Experts Group”**，是一种视频编码格式。<br><strong>Motion JPEG</strong> 技术常用与闭合电路的电视摄像机的模拟视频信号“翻译”成视频流，并存储在硬盘上。</p>
+<h1 id="环境"><a href="#环境" class="headerlink" title="环境"></a>环境</h1><ul>
+<li>主机：Ubuntu 18.04.4 LTS</li>
+<li>目标机：Cortex-A7</li>
+<li>交叉工具链：arm-linux-gnueabihf-</li>
+<li>摄像头：OV5640</li>
+</ul>
+<h1 id="查看摄像头信息"><a href="#查看摄像头信息" class="headerlink" title="查看摄像头信息"></a>查看摄像头信息</h1><ol>
+<li>支持 UVC （免驱）</li>
+<li>YUV 或者 MJPRG 格式输出</li>
+</ol>
+<h1 id="驱动移植"><a href="#驱动移植" class="headerlink" title="驱动移植"></a>驱动移植</h1><ol>
+<li>进入内核配置菜单，<code>make menuconfig</code></li>
+<li>选择<br><code>Device Drivers</code> -&gt; <code>Multimedia support</code> -&gt; <code>Video capture adapters</code> -&gt; <code>V4l USB devices</code> &amp; <code>V4L platform devices</code><br><code>Device Drivers</code> -&gt; <code>Multimedia support</code> -&gt; <code>V4L platform devices</code> -&gt; <code>Support for timberdale Video In/LogiWIN</code> &amp; <code>SoC camera support</code> &amp; <code>platform camera support</code><br><code>Device Drivers</code> -&gt; <code>Multimedia support</code> -&gt; <code>Video capture adapters</code> -&gt; <code>V4l USB devices</code> -&gt; <code>USB Video class (UVC)</code> &amp; <code>UVC input events device support</code> &amp; <code>GSPCA based webcams</code><br><code>Device Drivers</code> -&gt; <code>Multimedia support</code> -&gt; <code>Video capture adapters</code> -&gt; <code>V4l USB devices</code> -&gt;  <code>GSPCA based webcams</code>  -&gt; <code>ZC3XX USB Camera Driver</code>   </li>
+<li>编译内核，<code>make -j4 uImage</code> 并拷贝到共享目录</li>
+</ol>
+<h1 id="mjpeg-streamer-移植"><a href="#mjpeg-streamer-移植" class="headerlink" title="mjpeg-streamer 移植"></a>mjpeg-streamer 移植</h1><p>mjpg-stream的移植需要jpeg的库，所以需要先移植jpeg的库</p>
+<h2 id="jpeg-库移植"><a href="#jpeg-库移植" class="headerlink" title="jpeg 库移植"></a>jpeg 库移植</h2><ol>
+<li>下载 jpeg 库<br><code>http://www.ijg.org/files/jpegsrc.v8b.tar.gz</code> </li>
+<li>解压<br><code>tar -xvf jpegsrc.v8b.tar.gz</code></li>
+<li>配置源码<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cd jpeg-8b</span><br><span class="line">mkdir rootfs/video/jpegarm -p</span><br><span class="line">./configure --prefix=`home/rootfs/video/jpegarm --host=arm-linux-gnueabighf</span><br></pre></td></tr></table></figure></li>
+<li>编译安装<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">make</span><br><span class="line">make install</span><br></pre></td></tr></table></figure></li>
+<li>拷贝库到网络文件系统中<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo cp -arf /home/rootfs/video/jpegarm/lib/* /home/rootfs/lib</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h2 id="mjpg-streamer-移植"><a href="#mjpg-streamer-移植" class="headerlink" title="mjpg-streamer 移植"></a>mjpg-streamer 移植</h2><ol>
+<li>下载 mjpg-streamer<br><code>https://sourceforge.net/projects/mjpg-streamer/</code></li>
+<li>解压<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">tar -xvf mjpg-streamer-r182.tar.gz</span><br><span class="line">cd mjpg-streamer-182</span><br></pre></td></tr></table></figure></li>
+<li>修改源码<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">cd mjpg-streamer</span><br><span class="line">vim ./plugins/input_uvc/Makefile</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">CFLAGS += -O1 -DLINUX -D_GNU_SOURCE -Wall -shared -fPIC</span> </span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">修改为</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">CFLAGS += -O1 -DLINUX -D_GNU_SOURCE -Wall -shared -fPIC -I /home/ming/rootfs/video/jpegarm/include</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">$(CC) $(CFLAGS) -o <span class="variable">$@</span> input_uvc.c v4l2uvc.lo jpeg_utils.lo dynctrl.lo $(LFLAGS)</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">修改为</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">$(CC) $(CFLAGS) -L /home/ming/rootfs/video/jpegarm/lib  -o <span class="variable">$@</span> input_uvc.c v4l2uvc.lo jpeg_utils.lo dynctrl.lo $(LFLAGS)</span></span><br></pre></td></tr></table></figure></li>
+<li>编译<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd mjpg-streamer-182/mjpg-streamer</span><br><span class="line">make CC=arm-linux-gnueabihf-gcc</span><br></pre></td></tr></table></figure></li>
+<li>在网络文件系统中创建文件夹并拷贝文件<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">mkdir -p /home/rootfs/mjpg-streamer</span><br><span class="line">sudo cp *.so  /home/ming/rootfs/mjpg-streamer -arf</span><br><span class="line">sudo cp mjpg_streamer  /home/ming/rootfs/mjpg-streamer -arf</span><br><span class="line">sudo cp start.sh www/ /home/ming/rootfs/mjpg-streamer/ -arf</span><br></pre></td></tr></table></figure></li>
+<li>修改 <code>start.sh</code> 文件<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">./mjpg_streamer -i <span class="string">&quot;./input_uvc.so -y&quot;</span> -o <span class="string">&quot;./output_http.so -w ./www&quot;</span></span> </span><br></pre></td></tr></table></figure></li>
+<li><code>http://开发板IP地址:8080/?action=stream</code> 查看视频流</li>
+<li><code>http://开发板IP地址:8080/?action=snapshot</code> 查看快照</li>
+<li>修改网页源码</li>
+</ol>
+<h1 id="错误"><a href="#错误" class="headerlink" title="错误"></a>错误</h1><h2 id="1-make-svnversion-Command-not-found"><a href="#1-make-svnversion-Command-not-found" class="headerlink" title="1. make: svnversion: Command not found"></a>1. <code>make: svnversion: Command not found</code></h2><p>电脑中缺少必要的库，需要安装必要的软件集</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install subversion  libv4l-dev  libjpeg62-dev  imagemagick</span><br></pre></td></tr></table></figure>
+<h2 id="2-mjpg-streamer-c-27-28-fatal-error-linux-videodev-h-No-such-file-or-directory"><a href="#2-mjpg-streamer-c-27-28-fatal-error-linux-videodev-h-No-such-file-or-directory" class="headerlink" title="2. mjpg_streamer.c:27:28: fatal error: linux/videodev.h: No such file or directory"></a>2. <code>mjpg_streamer.c:27:28: fatal error: linux/videodev.h: No such file or directory</code></h2><p>可能是因为内核2.6.38和以后的版本已经移除了对 v4l1 的支持，这个东西可能比较老旧了。新的头文件是 video4linux2.h;相比v4l1很多接口都变化 。<br>可以选择以前低版本内核，或者用新版本的mjpg-streamer-code-182</p>
+<h2 id="3-Init-v4L2-failed-exit-fatal-n-init-VideoIn-failed"><a href="#3-Init-v4L2-failed-exit-fatal-n-init-VideoIn-failed" class="headerlink" title="3. Init v4L2 failed !! exit fatal \n init_VideoIn failed"></a>3. <code>Init v4L2 failed !! exit fatal \n init_VideoIn failed</code></h2><p>可能是由于摄像头支持YUV，而不是JPEG格式，需要修改start.sh文件</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./mjpg_streamer -i &quot;./input_uvc.so -y&quot; -o &quot;./output_http.so -w ./www&quot; </span><br></pre></td></tr></table></figure>
+<h2 id="4-获得帮助"><a href="#4-获得帮助" class="headerlink" title="4. 获得帮助"></a>4. 获得帮助</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./mjpg_streamer -h</span><br></pre></td></tr></table></figure>
     </div>
 
     
@@ -328,6 +366,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#MJPG"><span class="nav-number">1.</span> <span class="nav-text">MJPG</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83"><span class="nav-number">2.</span> <span class="nav-text">环境</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8B%E6%91%84%E5%83%8F%E5%A4%B4%E4%BF%A1%E6%81%AF"><span class="nav-number">3.</span> <span class="nav-text">查看摄像头信息</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%A9%B1%E5%8A%A8%E7%A7%BB%E6%A4%8D"><span class="nav-number">4.</span> <span class="nav-text">驱动移植</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#mjpeg-streamer-%E7%A7%BB%E6%A4%8D"><span class="nav-number">5.</span> <span class="nav-text">mjpeg-streamer 移植</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#jpeg-%E5%BA%93%E7%A7%BB%E6%A4%8D"><span class="nav-number">5.1.</span> <span class="nav-text">jpeg 库移植</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#mjpg-streamer-%E7%A7%BB%E6%A4%8D"><span class="nav-number">5.2.</span> <span class="nav-text">mjpg-streamer 移植</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%94%99%E8%AF%AF"><span class="nav-number">6.</span> <span class="nav-text">错误</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-make-svnversion-Command-not-found"><span class="nav-number">6.1.</span> <span class="nav-text">1. make: svnversion: Command not found</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-mjpg-streamer-c-27-28-fatal-error-linux-videodev-h-No-such-file-or-directory"><span class="nav-number">6.2.</span> <span class="nav-text">2. mjpg_streamer.c:27:28: fatal error: linux&#x2F;videodev.h: No such file or directory</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Init-v4L2-failed-exit-fatal-n-init-VideoIn-failed"><span class="nav-number">6.3.</span> <span class="nav-text">3. Init v4L2 failed !! exit fatal \n init_VideoIn failed</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E8%8E%B7%E5%BE%97%E5%B8%AE%E5%8A%A9"><span class="nav-number">6.4.</span> <span class="nav-text">4. 获得帮助</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -341,7 +380,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">9</span>
+          <span class="site-state-item-count">10</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -386,12 +425,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">19k</span>
+    <span title="站点总字数">37k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">34 分钟</span>
+    <span title="站点阅读时长">1:08</span>
 </div>
   <div class="powered-by">
     <!--由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动 -->
