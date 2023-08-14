@@ -1,6 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>IO 模型</title>
+    <url>/2023/04/10/IOModel/</url>
+    <content><![CDATA[<p>本文包含4种 <code>IO模型</code> 的介绍、实现原理分层解析、驱动编写思路和代码实现、以及应用层使用方法。</p>
+<span id="more"></span>
+
+<h1 id="IO模型的分析"><a href="#IO模型的分析" class="headerlink" title="IO模型的分析"></a>IO模型的分析</h1><p>IO 模型是指应用程序在调用 <code>read</code> 函数的时候，如果数据没有准备好，此时进程会发生什么样的状态转换，以及什么时候会返回。在Linux中有五种IO模型，分别是阻塞IO模型，非阻塞IO模型，IO多路复用IO模型，信号驱动IO模型，异步IO模型。下面是对它的分析<br>以下内容仅为我的个人积累，详细内容请参考官方文档和相关书籍。</p>
+<h1 id="阻塞IO模型"><a href="#阻塞IO模型" class="headerlink" title="阻塞IO模型"></a>阻塞IO模型</h1><p>在使用open打开设备文件的时候，如果没有指定 <code>O_NONBLOCK</code>，就说明使用的阻塞方式打开的文件。调用read函数想要从硬件中读取数据的时候，如果数据准备好了 <code>read</code> 就会立即返回，如果调用 <code>read</code> 的时候硬件的数据没有准备好进程休眠。当数据准备好的时候底层硬件会产生中断，内核的中断处理函数就会执行了，在中断处理函数中唤醒休眠的进程，将准备好的数据拷贝到用户空间即可。</p>
+<h2 id="阻塞IO模型的代码实现流程"><a href="#阻塞IO模型的代码实现流程" class="headerlink" title="阻塞IO模型的代码实现流程"></a>阻塞IO模型的代码实现流程</h2><h3 id="应用层"><a href="#应用层" class="headerlink" title="应用层"></a>应用层</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line">fd = open(<span class="string">&quot;/dev/mycdev&quot;</span>,O_RDWR);  <span class="comment">//阻塞打开</span></span><br><span class="line">read(fd,buf,<span class="keyword">sizeof</span>(buf));</span><br></pre></td></tr></table></figure>
+<h3 id="驱动层"><a href="#驱动层" class="headerlink" title="驱动层"></a>驱动层</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/* file_operations: */</span></span><br><span class="line">driver_read(file,ubuf,size,offs)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span>(file-&gt;f_flags &amp; O_NONBLOCK)&#123;</span><br><span class="line">        <span class="comment">//非阻塞</span></span><br><span class="line">        <span class="keyword">return</span> -EINVAL;</span><br><span class="line">    &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">        <span class="comment">//阻塞 （硬件数据是否准备好）</span></span><br><span class="line">        <span class="comment">//如果数据没有准备好此时进程需要休眠</span></span><br><span class="line">        wait_event(wq_head, condition)</span><br><span class="line">        wait_event_interruptible(wq_head, condition)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//读取底层硬件的数据</span></span><br><span class="line">    <span class="comment">//将读取到的数据拷贝到用户空间（copy_to_user）</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 中断处理函数中：*/</span></span><br><span class="line">    condition = <span class="number">1</span>;</span><br><span class="line">    wake_up(&amp;wq_head);</span><br><span class="line">    wake_up_interruptible(&amp;wq_head)</span><br></pre></td></tr></table></figure>
+
+
+<hr>
+<h1 id="IO多路复用IO模型"><a href="#IO多路复用IO模型" class="headerlink" title="IO多路复用IO模型"></a>IO多路复用IO模型</h1><p>在同一个app应用程序中如果想要同时监听多个fd对应数据。就需要使用 <code>select/poll/epoll</code> 来完成监听。如果所有的文件描述符的数据都没有准备好，此时进程休眠。如果有一个或者多个硬件的数据准备好就会产生硬件中断，在处理函数中唤醒休眠的进程。此时 <code>select/poll/epoll</code> 就会返回，从就绪的表中找到准备好数据的文件描述符，然后调用 <code>read</code> 将数据读取到用户空间即可。</p>
+<h2 id="IO多路复用IO模型的代码实现流程"><a href="#IO多路复用IO模型的代码实现流程" class="headerlink" title="IO多路复用IO模型的代码实现流程"></a>IO多路复用IO模型的代码实现流程</h2><h3 id="应用层-1"><a href="#应用层-1" class="headerlink" title="应用层"></a>应用层</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> fd1,fd2;</span><br><span class="line">fd_set rfds; <span class="comment">//定义读表</span></span><br><span class="line">fd1 = open(<span class="string">&quot;/dev/mycdev0&quot;</span>,O_RDWR);</span><br><span class="line">fd2 = open(<span class="string">&quot;/dev/input/mouse0&quot;</span>,O_RDWR);</span><br><span class="line"> </span><br><span class="line"><span class="keyword">while</span>(<span class="number">1</span>)&#123;</span><br><span class="line">    FD_ZERO(&amp;rfds); <span class="comment">//清空表</span></span><br><span class="line">    FD_SET(fd1,&amp;rfds); <span class="comment">//将fd1放到读表中</span></span><br><span class="line">    FD_SET(fd2,&amp;rfds); <span class="comment">//将fd2放到读表中</span></span><br><span class="line">    select(fd2+<span class="number">1</span>,&amp;rfds,<span class="literal">NULL</span>,<span class="literal">NULL</span>,<span class="literal">NULL</span>); <span class="comment">//监听文件描述符</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span>(FD_ISSET(fd1,&amp;rfds))&#123;</span><br><span class="line">        read(fd1,buf1,<span class="keyword">sizeof</span>(buf1));</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;mycdev:%s\n&quot;</span>,buf1);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span>(FD_ISSET(fd2,&amp;rfds))&#123;</span><br><span class="line">        read(fd2,buf2,<span class="keyword">sizeof</span>(buf2));</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;mouse0:%s\n&quot;</span>,buf2);</span><br><span class="line">    &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<h3 id="驱动层-1"><a href="#驱动层-1" class="headerlink" title="驱动层"></a>驱动层</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/* file_operations:(应用层select/poll/epoll对应驱动都是poll函数) */</span></span><br><span class="line"><span class="type">__poll_t</span> (*poll) (<span class="keyword">struct</span> file *file, <span class="keyword">struct</span> poll_table_struct *wait)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// 1.定义返回值变量</span></span><br><span class="line">    <span class="type">__poll_t</span> mask=<span class="number">0</span>;</span><br><span class="line">    <span class="comment">// 2.调用poll_wait完成阻塞</span></span><br><span class="line">    poll_wait(file,&amp;wq_head,wait);</span><br><span class="line">    <span class="comment">// 3.如果数据准备好置位mask</span></span><br><span class="line">    <span class="keyword">if</span>(condition)&#123;</span><br><span class="line">        mask |= EPOLLIN;       <span class="comment">//EPOLLIN 读  EPOLLOUT写</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 4.返回mask</span></span><br><span class="line">    <span class="keyword">return</span> mask;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="IO多路复用IO模型的实现原理"><a href="#IO多路复用IO模型的实现原理" class="headerlink" title="IO多路复用IO模型的实现原理"></a>IO多路复用IO模型的实现原理</h2><h3 id="应用层-2"><a href="#应用层-2" class="headerlink" title="应用层"></a>应用层</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line">select(fd2 + <span class="number">1</span>, &amp;rfds, <span class="literal">NULL</span>, <span class="literal">NULL</span>, <span class="literal">NULL</span>);</span><br></pre></td></tr></table></figure>
+<h3 id="虚拟文件系统层"><a href="#虚拟文件系统层" class="headerlink" title="虚拟文件系统层"></a>虚拟文件系统层</h3><p>首先使用 <code>vi -t sys_select</code> 命令查看 <code>select</code> 函数的实现</p>
+<ol>
+<li>对最大文件描述符的值作校验工作</li>
+<li>在内核空间分配6张表的内存，其中前3张表用于保存用户传递到内核的文件描述符后三张表用于保存就绪的文件描述符（后三张表此时是空的）</li>
+<li>遍历文件描述符<br><code>mask = rfds--&gt;fd--&gt;fd_array[fd]--&gt;file--&gt;f_op--&gt;poll(file,wait);</code><br>判断mask返回的值，如果所有的文件描述对应驱动poll函数返回的值都是0，说明所有文件描述符的数据都没准备好，构造等待队列，进程休眠</li>
+<li>如果一个或者多个文件描述符对应的数据准备好了，就会唤醒这个休眠的进程</li>
+<li>再次遍历文件描述符<br><code>mask = rfds--&gt;fd--&gt;fd_array[fd]--&gt;file--&gt;f_op--&gt;poll(file,wait);</code><br>找出mask不为0的文件描述符，将这个文件描述符放到就绪的文件描述符表中</li>
+<li>将就绪的文件描述表拷贝到用户空间</li>
+</ol>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>总的来说 <code>select</code> <code>poll</code> <code>epoll</code> 的实现原理都是一样的，只是在实现的时候有一些细节上的差别。</p>
+<h4 id="select-结构体"><a href="#select-结构体" class="headerlink" title="select (结构体)"></a>select (结构体)</h4><ol>
+<li>select监听的最大文件描述符限制1024</li>
+<li>select的内部实现又清空表的过程，需要反复构造表，从用户空间向内核空间拷贝表，效率低</li>
+<li>select从休眠状态被唤醒之后需要再次遍历文件描述符表，效率比较低</li>
+</ol>
+<h4 id="poll-链表"><a href="#poll-链表" class="headerlink" title="poll (链表)"></a>poll (链表)</h4><ol>
+<li>poll监听的文件描述符没有个数限制</li>
+<li>poll没有清空表的过程，效率高</li>
+<li>poll从休眠状态被唤醒之后需要再次遍历文件描述符表，效率比较低</li>
+</ol>
+<h4 id="epoll-红黑树-双链表"><a href="#epoll-红黑树-双链表" class="headerlink" title="epoll (红黑树+双链表)"></a>epoll (红黑树+双链表)</h4><ol>
+<li>epoll监听的文件描述符没有个数限制</li>
+<li>epoll没有清空表的过程，效率高</li>
+<li>epoll监听的文件描述符就绪之后它能够直接拿到就绪的文件描述符，不需要遍历，效率高</li>
+</ol>
+<p><code>epoll_ctl</code> 支持管道，FIFO，套接字，POSIX消息队列，终端，设备等，但是就是不支持普通文件或目录的fd</p>
+<hr>
+<h1 id="异步通知IO模型"><a href="#异步通知IO模型" class="headerlink" title="异步通知IO模型"></a>异步通知IO模型</h1><p>当底层硬件的数据准备好的时候会产生硬件中断，在驱动的中断处理函数中给对应的进程发送信号，当进程收到信号的时候去读取数据，当没有收到信号的时候进程可以执行任意操作。<br>信号和中断不同，中断是基于硬件实现的，而信号是基于软件实现的是中断的一种模拟，如果没有操作系统那么就没有信号。</p>
+<h2 id="异步通知IO模型的代码实现流程"><a href="#异步通知IO模型的代码实现流程" class="headerlink" title="异步通知IO模型的代码实现流程"></a>异步通知IO模型的代码实现流程</h2><h3 id="应用层-3"><a href="#应用层-3" class="headerlink" title="应用层"></a>应用层</h3><p>首先在系统的信号中有一个 <code>29) SIGIO</code> 就是专门留给IO模型使用的，可以在终端通过 <code>kill -l</code> 命令查看</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 信号处理函数</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">signal_handle</span><span class="params">(<span class="type">int</span> signo)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">//从底层读取数据</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 1.打开设备文件</span></span><br><span class="line">fd = open(<span class="string">&quot;/dev/mycdev0&quot;</span>,O_RDWR);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 2.使用signal函数为信号绑定处理函数</span></span><br><span class="line"><span class="comment">//      要明白signal函数并不会调用file_operations中的任何函数，只是为信号绑定了一个处理函数</span></span><br><span class="line">signal(SIGIO,signal_handle);</span><br><span class="line"> </span><br><span class="line"><span class="comment">// 3.调用驱动的fasync函数，做初始化工作</span></span><br><span class="line"><span class="type">unsigned</span> <span class="type">int</span> flags = fcntl(fd,F_GETFL);</span><br><span class="line">fcntl(fd,F_SETFL,flags|FASYNC);</span><br><span class="line"> </span><br><span class="line"><span class="comment">// 4.告诉内核接收信号的进程是当前进程</span></span><br><span class="line">fcntl(fd,F_SETOWN,getpid());</span><br></pre></td></tr></table></figure>
+<h3 id="虚拟文件系统层-1"><a href="#虚拟文件系统层-1" class="headerlink" title="虚拟文件系统层"></a>虚拟文件系统层</h3><p>首先可以使用 <code>vi -t sys_fcntl</code> 命令查看 <code>fcntl</code> 函数的实现</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 可知首先执行的是</span></span><br><span class="line">SYSCALL_DEFINE3(fcntl, <span class="type">unsigned</span> <span class="type">int</span>, fd, <span class="type">unsigned</span> <span class="type">int</span>, cmd, <span class="type">unsigned</span> <span class="type">long</span>, arg) </span><br><span class="line"><span class="comment">// 经过替换后可以得到</span></span><br><span class="line"><span class="type">unsigned</span> <span class="type">int</span> <span class="title function_">sys_fcntl</span><span class="params">(<span class="type">unsigned</span> <span class="type">int</span> fd, <span class="type">unsigned</span> <span class="type">int</span> cmd, <span class="type">unsigned</span> <span class="type">long</span> arg)</span></span><br><span class="line">---&gt;err = do_fcntl(fd, cmd, arg, f.file);</span><br><span class="line"><span class="comment">// 然后知道会调用 do_fcntl 函数</span></span><br><span class="line"><span class="type">static</span> <span class="type">long</span> <span class="title function_">do_fcntl</span><span class="params">(<span class="type">int</span> fd, <span class="type">unsigned</span> <span class="type">int</span> cmd, <span class="type">unsigned</span> <span class="type">long</span> arg,<span class="keyword">struct</span> file *filp)</span></span><br><span class="line">---&gt;<span class="title function_">switch</span> <span class="params">(cmd)</span> &#123;  </span><br><span class="line">    <span class="keyword">case</span> F_GETFL:</span><br><span class="line">        err = filp-&gt;f_flags;   <span class="comment">//open函数的第二个参数，代表文件打开式</span></span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> F_SETFL:</span><br><span class="line">        err = setfl(fd, filp, arg); <span class="comment">//arg = filp-&gt;f_flags|FASYNC</span></span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">int</span> <span class="title function_">setfl</span><span class="params">(<span class="type">int</span> fd, <span class="keyword">struct</span> file * filp, <span class="type">unsigned</span> <span class="type">long</span> arg)</span>  </span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">//arg = filp-&gt;f_flags|FASYNC</span></span><br><span class="line">    <span class="keyword">if</span> (((arg ^ filp-&gt;f_flags) &amp; FASYNC) &amp;&amp; filp-&gt;f_op-&gt;fasync) &#123;</span><br><span class="line">        <span class="comment">//调用底层驱动的fasync函数执行</span></span><br><span class="line">        error = filp-&gt;f_op-&gt;fasync(fd, filp, (arg &amp; FASYNC) != <span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="驱动层-2"><a href="#驱动层-2" class="headerlink" title="驱动层"></a>驱动层</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/* file_operations: */</span></span><br><span class="line"><span class="comment">// 在内核中查看函数的实现，通过注释发现 fasnc_helper 函数是用来初始化异步通知的队列的，因为如果有多个进程都要异步通知，那么就需要一个队列来存储这些进程</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">mycdev_fasync</span><span class="params">(<span class="type">int</span> fd, <span class="keyword">struct</span> file *file, <span class="type">int</span> on)</span> </span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">//发信号前的初始化工作</span></span><br><span class="line">    <span class="comment">//初始化一个异步通知的队列，你可以通过fapp成员拿到队列</span></span><br><span class="line">    <span class="keyword">return</span>  fasync_helper(fd, file, on, &amp;fapp);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 发送信号：</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">kill_fasync</span><span class="params">(&amp;fapp, SIGIO, POLL_IN)</span>;   <span class="comment">//POLL_IN 发送可读事件   POLL_OUT  发送可写事件</span></span><br></pre></td></tr></table></figure>
+]]></content>
+  </entry>
+  <entry>
     <title>BOA 服务器移植</title>
     <url>/2023/01/15/BOA%20%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%A7%BB%E6%A4%8D/</url>
     <content><![CDATA[<p>本文包含 <code>BOA</code> 服务器的介绍、移植、配置、参数介绍、错误解决等。</p>
@@ -80,6 +132,11 @@
 ]]></content>
   </entry>
   <entry>
+    <title></title>
+    <url>/2023/08/13/C/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
     <title>SQLite3 移植</title>
     <url>/2023/01/22/SQLite3%20%E7%A7%BB%E6%A4%8D/</url>
     <content><![CDATA[<p>本文包含 <code>SQLite3</code> 的介绍、移植过程、注意事项和使用方式。</p>
@@ -120,56 +177,13 @@
 ]]></content>
   </entry>
   <entry>
-    <title>IO 模型</title>
-    <url>/2023/04/10/IOModel/</url>
-    <content><![CDATA[<p>本文包含4种 <code>IO模型</code> 的介绍、实现原理分层解析、驱动编写思路和代码实现、以及应用层使用方法。</p>
+    <title>子系统</title>
+    <url>/2023/03/10/%E5%AD%90%E7%B3%BB%E7%BB%9F/</url>
+    <content><![CDATA[<p>本文包含 <code>GPIO</code> <code>IIC</code> <code>SPI</code> 子系统的解析，使用方法，驱动编写思路，代码实现和应用层使用方法，</p>
 <span id="more"></span>
 
-<h1 id="IO模型的分析"><a href="#IO模型的分析" class="headerlink" title="IO模型的分析"></a>IO模型的分析</h1><p>IO 模型是指应用程序在调用 <code>read</code> 函数的时候，如果数据没有准备好，此时进程会发生什么样的状态转换，以及什么时候会返回。在Linux中有五种IO模型，分别是阻塞IO模型，非阻塞IO模型，IO多路复用IO模型，信号驱动IO模型，异步IO模型。下面是对它的分析<br>以下内容仅为我的个人积累，详细内容请参考官方文档和相关书籍。</p>
-<h1 id="阻塞IO模型"><a href="#阻塞IO模型" class="headerlink" title="阻塞IO模型"></a>阻塞IO模型</h1><p>在使用open打开设备文件的时候，如果没有指定 <code>O_NONBLOCK</code>，就说明使用的阻塞方式打开的文件。调用read函数想要从硬件中读取数据的时候，如果数据准备好了 <code>read</code> 就会立即返回，如果调用 <code>read</code> 的时候硬件的数据没有准备好进程休眠。当数据准备好的时候底层硬件会产生中断，内核的中断处理函数就会执行了，在中断处理函数中唤醒休眠的进程，将准备好的数据拷贝到用户空间即可。</p>
-<h2 id="阻塞IO模型的代码实现流程"><a href="#阻塞IO模型的代码实现流程" class="headerlink" title="阻塞IO模型的代码实现流程"></a>阻塞IO模型的代码实现流程</h2><h3 id="应用层"><a href="#应用层" class="headerlink" title="应用层"></a>应用层</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line">fd = open(<span class="string">&quot;/dev/mycdev&quot;</span>,O_RDWR);  <span class="comment">//阻塞打开</span></span><br><span class="line">read(fd,buf,<span class="keyword">sizeof</span>(buf));</span><br></pre></td></tr></table></figure>
-<h3 id="驱动层"><a href="#驱动层" class="headerlink" title="驱动层"></a>驱动层</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/* file_operations: */</span></span><br><span class="line">driver_read(file,ubuf,size,offs)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span>(file-&gt;f_flags &amp; O_NONBLOCK)&#123;</span><br><span class="line">        <span class="comment">//非阻塞</span></span><br><span class="line">        <span class="keyword">return</span> -EINVAL;</span><br><span class="line">    &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">        <span class="comment">//阻塞 （硬件数据是否准备好）</span></span><br><span class="line">        <span class="comment">//如果数据没有准备好此时进程需要休眠</span></span><br><span class="line">        wait_event(wq_head, condition)</span><br><span class="line">        wait_event_interruptible(wq_head, condition)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//读取底层硬件的数据</span></span><br><span class="line">    <span class="comment">//将读取到的数据拷贝到用户空间（copy_to_user）</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 中断处理函数中：*/</span></span><br><span class="line">    condition = <span class="number">1</span>;</span><br><span class="line">    wake_up(&amp;wq_head);</span><br><span class="line">    wake_up_interruptible(&amp;wq_head)</span><br></pre></td></tr></table></figure>
 
-
-<hr>
-<h1 id="IO多路复用IO模型"><a href="#IO多路复用IO模型" class="headerlink" title="IO多路复用IO模型"></a>IO多路复用IO模型</h1><p>在同一个app应用程序中如果想要同时监听多个fd对应数据。就需要使用 <code>select/poll/epoll</code> 来完成监听。如果所有的文件描述符的数据都没有准备好，此时进程休眠。如果有一个或者多个硬件的数据准备好就会产生硬件中断，在处理函数中唤醒休眠的进程。此时 <code>select/poll/epoll</code> 就会返回，从就绪的表中找到准备好数据的文件描述符，然后调用 <code>read</code> 将数据读取到用户空间即可。</p>
-<h2 id="IO多路复用IO模型的代码实现流程"><a href="#IO多路复用IO模型的代码实现流程" class="headerlink" title="IO多路复用IO模型的代码实现流程"></a>IO多路复用IO模型的代码实现流程</h2><h3 id="应用层-1"><a href="#应用层-1" class="headerlink" title="应用层"></a>应用层</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> fd1,fd2;</span><br><span class="line">fd_set rfds; <span class="comment">//定义读表</span></span><br><span class="line">fd1 = open(<span class="string">&quot;/dev/mycdev0&quot;</span>,O_RDWR);</span><br><span class="line">fd2 = open(<span class="string">&quot;/dev/input/mouse0&quot;</span>,O_RDWR);</span><br><span class="line"> </span><br><span class="line"><span class="keyword">while</span>(<span class="number">1</span>)&#123;</span><br><span class="line">    FD_ZERO(&amp;rfds); <span class="comment">//清空表</span></span><br><span class="line">    FD_SET(fd1,&amp;rfds); <span class="comment">//将fd1放到读表中</span></span><br><span class="line">    FD_SET(fd2,&amp;rfds); <span class="comment">//将fd2放到读表中</span></span><br><span class="line">    select(fd2+<span class="number">1</span>,&amp;rfds,<span class="literal">NULL</span>,<span class="literal">NULL</span>,<span class="literal">NULL</span>); <span class="comment">//监听文件描述符</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span>(FD_ISSET(fd1,&amp;rfds))&#123;</span><br><span class="line">        read(fd1,buf1,<span class="keyword">sizeof</span>(buf1));</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;mycdev:%s\n&quot;</span>,buf1);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span>(FD_ISSET(fd2,&amp;rfds))&#123;</span><br><span class="line">        read(fd2,buf2,<span class="keyword">sizeof</span>(buf2));</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;mouse0:%s\n&quot;</span>,buf2);</span><br><span class="line">    &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-<h3 id="驱动层-1"><a href="#驱动层-1" class="headerlink" title="驱动层"></a>驱动层</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/* file_operations:(应用层select/poll/epoll对应驱动都是poll函数) */</span></span><br><span class="line"><span class="type">__poll_t</span> (*poll) (<span class="keyword">struct</span> file *file, <span class="keyword">struct</span> poll_table_struct *wait)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// 1.定义返回值变量</span></span><br><span class="line">    <span class="type">__poll_t</span> mask=<span class="number">0</span>;</span><br><span class="line">    <span class="comment">// 2.调用poll_wait完成阻塞</span></span><br><span class="line">    poll_wait(file,&amp;wq_head,wait);</span><br><span class="line">    <span class="comment">// 3.如果数据准备好置位mask</span></span><br><span class="line">    <span class="keyword">if</span>(condition)&#123;</span><br><span class="line">        mask |= EPOLLIN;       <span class="comment">//EPOLLIN 读  EPOLLOUT写</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 4.返回mask</span></span><br><span class="line">    <span class="keyword">return</span> mask;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="IO多路复用IO模型的实现原理"><a href="#IO多路复用IO模型的实现原理" class="headerlink" title="IO多路复用IO模型的实现原理"></a>IO多路复用IO模型的实现原理</h2><h3 id="应用层-2"><a href="#应用层-2" class="headerlink" title="应用层"></a>应用层</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line">select(fd2 + <span class="number">1</span>, &amp;rfds, <span class="literal">NULL</span>, <span class="literal">NULL</span>, <span class="literal">NULL</span>);</span><br></pre></td></tr></table></figure>
-<h3 id="虚拟文件系统层"><a href="#虚拟文件系统层" class="headerlink" title="虚拟文件系统层"></a>虚拟文件系统层</h3><p>首先使用 <code>vi -t sys_select</code> 命令查看 <code>select</code> 函数的实现</p>
-<ol>
-<li>对最大文件描述符的值作校验工作</li>
-<li>在内核空间分配6张表的内存，其中前3张表用于保存用户传递到内核的文件描述符后三张表用于保存就绪的文件描述符（后三张表此时是空的）</li>
-<li>遍历文件描述符<br><code>mask = rfds--&gt;fd--&gt;fd_array[fd]--&gt;file--&gt;f_op--&gt;poll(file,wait);</code><br>判断mask返回的值，如果所有的文件描述对应驱动poll函数返回的值都是0，说明所有文件描述符的数据都没准备好，构造等待队列，进程休眠</li>
-<li>如果一个或者多个文件描述符对应的数据准备好了，就会唤醒这个休眠的进程</li>
-<li>再次遍历文件描述符<br><code>mask = rfds--&gt;fd--&gt;fd_array[fd]--&gt;file--&gt;f_op--&gt;poll(file,wait);</code><br>找出mask不为0的文件描述符，将这个文件描述符放到就绪的文件描述符表中</li>
-<li>将就绪的文件描述表拷贝到用户空间</li>
-</ol>
-<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>总的来说 <code>select</code> <code>poll</code> <code>epoll</code> 的实现原理都是一样的，只是在实现的时候有一些细节上的差别。</p>
-<h4 id="select-结构体"><a href="#select-结构体" class="headerlink" title="select (结构体)"></a>select (结构体)</h4><ol>
-<li>select监听的最大文件描述符限制1024</li>
-<li>select的内部实现又清空表的过程，需要反复构造表，从用户空间向内核空间拷贝表，效率低</li>
-<li>select从休眠状态被唤醒之后需要再次遍历文件描述符表，效率比较低</li>
-</ol>
-<h4 id="poll-链表"><a href="#poll-链表" class="headerlink" title="poll (链表)"></a>poll (链表)</h4><ol>
-<li>poll监听的文件描述符没有个数限制</li>
-<li>poll没有清空表的过程，效率高</li>
-<li>poll从休眠状态被唤醒之后需要再次遍历文件描述符表，效率比较低</li>
-</ol>
-<h4 id="epoll-红黑树-双链表"><a href="#epoll-红黑树-双链表" class="headerlink" title="epoll (红黑树+双链表)"></a>epoll (红黑树+双链表)</h4><ol>
-<li>epoll监听的文件描述符没有个数限制</li>
-<li>epoll没有清空表的过程，效率高</li>
-<li>epoll监听的文件描述符就绪之后它能够直接拿到就绪的文件描述符，不需要遍历，效率高</li>
-</ol>
-<p><code>epoll_ctl</code> 支持管道，FIFO，套接字，POSIX消息队列，终端，设备等，但是就是不支持普通文件或目录的fd</p>
-<hr>
-<h1 id="异步通知IO模型"><a href="#异步通知IO模型" class="headerlink" title="异步通知IO模型"></a>异步通知IO模型</h1><p>当底层硬件的数据准备好的时候会产生硬件中断，在驱动的中断处理函数中给对应的进程发送信号，当进程收到信号的时候去读取数据，当没有收到信号的时候进程可以执行任意操作。<br>信号和中断不同，中断是基于硬件实现的，而信号是基于软件实现的是中断的一种模拟，如果没有操作系统那么就没有信号。</p>
-<h2 id="异步通知IO模型的代码实现流程"><a href="#异步通知IO模型的代码实现流程" class="headerlink" title="异步通知IO模型的代码实现流程"></a>异步通知IO模型的代码实现流程</h2><h3 id="应用层-3"><a href="#应用层-3" class="headerlink" title="应用层"></a>应用层</h3><p>首先在系统的信号中有一个 <code>29) SIGIO</code> 就是专门留给IO模型使用的，可以在终端通过 <code>kill -l</code> 命令查看</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 信号处理函数</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">signal_handle</span><span class="params">(<span class="type">int</span> signo)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">//从底层读取数据</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 1.打开设备文件</span></span><br><span class="line">fd = open(<span class="string">&quot;/dev/mycdev0&quot;</span>,O_RDWR);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 2.使用signal函数为信号绑定处理函数</span></span><br><span class="line"><span class="comment">//      要明白signal函数并不会调用file_operations中的任何函数，只是为信号绑定了一个处理函数</span></span><br><span class="line">signal(SIGIO,signal_handle);</span><br><span class="line"> </span><br><span class="line"><span class="comment">// 3.调用驱动的fasync函数，做初始化工作</span></span><br><span class="line"><span class="type">unsigned</span> <span class="type">int</span> flags = fcntl(fd,F_GETFL);</span><br><span class="line">fcntl(fd,F_SETFL,flags|FASYNC);</span><br><span class="line"> </span><br><span class="line"><span class="comment">// 4.告诉内核接收信号的进程是当前进程</span></span><br><span class="line">fcntl(fd,F_SETOWN,getpid());</span><br></pre></td></tr></table></figure>
-<h3 id="虚拟文件系统层-1"><a href="#虚拟文件系统层-1" class="headerlink" title="虚拟文件系统层"></a>虚拟文件系统层</h3><p>首先可以使用 <code>vi -t sys_fcntl</code> 命令查看 <code>fcntl</code> 函数的实现</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 可知首先执行的是</span></span><br><span class="line">SYSCALL_DEFINE3(fcntl, <span class="type">unsigned</span> <span class="type">int</span>, fd, <span class="type">unsigned</span> <span class="type">int</span>, cmd, <span class="type">unsigned</span> <span class="type">long</span>, arg) </span><br><span class="line"><span class="comment">// 经过替换后可以得到</span></span><br><span class="line"><span class="type">unsigned</span> <span class="type">int</span> <span class="title function_">sys_fcntl</span><span class="params">(<span class="type">unsigned</span> <span class="type">int</span> fd, <span class="type">unsigned</span> <span class="type">int</span> cmd, <span class="type">unsigned</span> <span class="type">long</span> arg)</span></span><br><span class="line">---&gt;err = do_fcntl(fd, cmd, arg, f.file);</span><br><span class="line"><span class="comment">// 然后知道会调用 do_fcntl 函数</span></span><br><span class="line"><span class="type">static</span> <span class="type">long</span> <span class="title function_">do_fcntl</span><span class="params">(<span class="type">int</span> fd, <span class="type">unsigned</span> <span class="type">int</span> cmd, <span class="type">unsigned</span> <span class="type">long</span> arg,<span class="keyword">struct</span> file *filp)</span></span><br><span class="line">---&gt;<span class="title function_">switch</span> <span class="params">(cmd)</span> &#123;  </span><br><span class="line">    <span class="keyword">case</span> F_GETFL:</span><br><span class="line">        err = filp-&gt;f_flags;   <span class="comment">//open函数的第二个参数，代表文件打开式</span></span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> F_SETFL:</span><br><span class="line">        err = setfl(fd, filp, arg); <span class="comment">//arg = filp-&gt;f_flags|FASYNC</span></span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">int</span> <span class="title function_">setfl</span><span class="params">(<span class="type">int</span> fd, <span class="keyword">struct</span> file * filp, <span class="type">unsigned</span> <span class="type">long</span> arg)</span>  </span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">//arg = filp-&gt;f_flags|FASYNC</span></span><br><span class="line">    <span class="keyword">if</span> (((arg ^ filp-&gt;f_flags) &amp; FASYNC) &amp;&amp; filp-&gt;f_op-&gt;fasync) &#123;</span><br><span class="line">        <span class="comment">//调用底层驱动的fasync函数执行</span></span><br><span class="line">        error = filp-&gt;f_op-&gt;fasync(fd, filp, (arg &amp; FASYNC) != <span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="驱动层-2"><a href="#驱动层-2" class="headerlink" title="驱动层"></a>驱动层</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/* file_operations: */</span></span><br><span class="line"><span class="comment">// 在内核中查看函数的实现，通过注释发现 fasnc_helper 函数是用来初始化异步通知的队列的，因为如果有多个进程都要异步通知，那么就需要一个队列来存储这些进程</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">mycdev_fasync</span><span class="params">(<span class="type">int</span> fd, <span class="keyword">struct</span> file *file, <span class="type">int</span> on)</span> </span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">//发信号前的初始化工作</span></span><br><span class="line">    <span class="comment">//初始化一个异步通知的队列，你可以通过fapp成员拿到队列</span></span><br><span class="line">    <span class="keyword">return</span>  fasync_helper(fd, file, on, &amp;fapp);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 发送信号：</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">kill_fasync</span><span class="params">(&amp;fapp, SIGIO, POLL_IN)</span>;   <span class="comment">//POLL_IN 发送可读事件   POLL_OUT  发送可写事件</span></span><br></pre></td></tr></table></figure>
-]]></content>
+<h1 id="子系统"><a href="#子系统" class="headerlink" title="子系统"></a>子系统</h1><h2 id="GPIO"><a href="#GPIO" class="headerlink" title="GPIO"></a>GPIO</h2><h2 id="IIC"><a href="#IIC" class="headerlink" title="IIC"></a>IIC</h2><h2 id="SPI"><a href="#SPI" class="headerlink" title="SPI"></a>SPI</h2>]]></content>
   </entry>
   <entry>
     <title>Git &amp; Github 的使用</title>
@@ -214,27 +228,6 @@
 <h2 id="Git-分支"><a href="#Git-分支" class="headerlink" title="Git 分支"></a>Git 分支</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git branch testing <span class="comment"># 创建分支</span></span><br><span class="line">git <span class="built_in">log</span> --oneline --decorate <span class="comment"># 查看各个分支当前所指的对象，由 --decorate 选项可以看到每一个分支的最后一次提交</span></span><br><span class="line">git <span class="built_in">log</span> --oneline --decorate --graph --all <span class="comment"># 输出你的提交历史、各个分支的指向以及项目的分支分叉情况</span></span><br><span class="line">git checkout testing <span class="comment"># 切换分支</span></span><br><span class="line">git checkout -b iss53 <span class="comment"># 创建并切换到 iss53 分支 branch</span></span><br><span class="line">git merge hotfix <span class="comment"># 合并 hotfix 分支到当前分支</span></span><br><span class="line">git branch -d hotfix <span class="comment"># 删除 hotfix 分支 delete</span></span><br><span class="line">git mergetool <span class="comment"># 合并冲突可视化工具</span></span><br></pre></td></tr></table></figure>]]></content>
   </entry>
   <entry>
-    <title>总线协议</title>
-    <url>/2023/01/14/%E6%80%BB%E7%BA%BF%E5%8D%8F%E8%AE%AE/</url>
-    <content><![CDATA[<p>本文包括 <code>UART</code> <code>IIC</code> <code>SCCB</code> <code>SPI</code> 总线协议的解析，使用方法，驱动编写思路。</p>
-<span id="more"></span>
-
-<h1 id="IIC"><a href="#IIC" class="headerlink" title="IIC"></a>IIC</h1><p>一种<strong>同步串行</strong>的<strong>半双工</strong>总线，使用一根数据线<strong>SDA</strong>和一根时钟线<strong>SCL</strong>来传输数据，具有结构简单，接口连接方便，成本低的特点，速率再100kbps-400kbps之间。</p>
-<h2 id="连接方式"><a href="#连接方式" class="headerlink" title="连接方式"></a>连接方式</h2><p><img src="/../image/IIClink.png" alt="IIC link"></p>
-<h2 id="通信方式"><a href="#通信方式" class="headerlink" title="通信方式"></a>通信方式</h2><h3 id="起始信号-和-终止信号"><a href="#起始信号-和-终止信号" class="headerlink" title="起始信号 和 终止信号"></a>起始信号 和 终止信号</h3><p>在时钟线为<strong>高电平</strong>时，数据线<strong>由高电平跳变到低</strong>电平，表示起始信号。<br>在时钟线为<strong>高电平</strong>时，数据线<strong>由低电平跳变到高</strong>电平，表示终止信号。<br><img src="/../image/IICstart.png" alt="IIC start"></p>
-<h3 id="数据"><a href="#数据" class="headerlink" title="数据"></a>数据</h3><p>数据传输时，在时钟线为高电平时，要求数据线的数据保持稳定，只有在时钟线为低电平时，数据线的数据才能发生变化。一个时钟周期完成1bit数据的传输。<br>每一个字节必须保证是<strong>8</strong>位长度。数据传送时，先传送最<strong>高位</strong>（MSB），每一个被传送的字节后面都必须跟随一位<strong>应答位</strong>（即一帧共有9位）。<br><img src="/../image/IICdata.png" alt="IIC data"></p>
-<h3 id="应答"><a href="#应答" class="headerlink" title="应答"></a>应答</h3><p>在时钟线为高电平时，数据线由高电平跳变到低电平，表示应答位。<br>在时钟线为高电平时，数据线由低电平跳变到高电平，表示非应答位。</p>
-<h3 id="寻址"><a href="#寻址" class="headerlink" title="寻址"></a>寻址</h3><p>IIC总线支持7、8、10位寻址，主机在起始信号后必须传送一个从机的地址（7位），第<strong>8位</strong>是数据的传送方向位（R&#x2F;W），用“0”表示主机发送数据（W），“1”表示主机接收数据（R）。总线上的每个从机都将这7位地址码与自己的地址进行比较，如果相同，则认为自己被主机寻址，根据R&#x2F;W位将自己定为发送器或接收器。<br><img src="/../image/IIC7.png" alt="IIC 7"><br>8位寻址和7位相似，只不过厂商在提供地址时，将第八位读写位包含在了地址中，所以前7位才是真正的地址。<br><img src="/../image/IIC8.png" alt="IIC 8"><br>10位寻址略有不同，10位地址需要分两帧发送，其中第一帧的前5位是固定的<code>11110</code>,后跟地址的高两位，最后一位为读写位，第二帧为地址的低8位。<br><img src="/../image/IIC10.png" alt="IIC 10"></p>
-<h2 id="数据读写"><a href="#数据读写" class="headerlink" title="数据读写"></a>数据读写</h2><p><strong>写操作</strong>：主机发送起始信号，发送从机地址和写信号，从机应答，主机发送数据，从机应答，主机发送终止信号。<br><code>start + (7bit从机地址+1bit写0) + ack + (8bit/16bit寄存器地址) + ack + (8bit/16bit数据) + ack + stop</code><br><img src="/../image/IICwrite.png" alt="IIC write"><br><strong>读操作</strong>：主机发送起始信号，发送从机地址和写信号，从机应答，主机再次发送起始信号，发送从机地址和读信号，应答，主机接受数据，不给应答，主机发送终止信号。<br><img src="/../image/IICread.png" alt="IIC read"></p>
-<h2 id="速率"><a href="#速率" class="headerlink" title="速率"></a>速率</h2><p>100KHz 高速、400KHz全速、3.4MHz高速</p>
-<h2 id="特点"><a href="#特点" class="headerlink" title="特点"></a>特点</h2><ul>
-<li>串行通信，只需要两根线，数据线和时钟线</li>
-<li>半双工通信，数据只能单向传输</li>
-<li>串行数据传输，具备应答机制。</li>
-</ul>
-]]></content>
-  </entry>
-  <entry>
     <title>sys_select 剖析</title>
     <url>/2022/07/10/sys_select%E5%86%85%E9%83%A8%E5%AE%9E%E7%8E%B0/</url>
     <content><![CDATA[<p>本文包含对 <code>sys_select</code> 从内核层面的实现进行剖析</p>
@@ -256,13 +249,25 @@
 <h1 id="库"><a href="#库" class="headerlink" title="库"></a>库</h1>]]></content>
   </entry>
   <entry>
-    <title>子系统</title>
-    <url>/2023/03/10/%E5%AD%90%E7%B3%BB%E7%BB%9F/</url>
-    <content><![CDATA[<p>本文包含 <code>GPIO</code> <code>IIC</code> <code>SPI</code> 子系统的解析，使用方法，驱动编写思路，代码实现和应用层使用方法，</p>
+    <title>总线协议</title>
+    <url>/2023/01/14/%E6%80%BB%E7%BA%BF%E5%8D%8F%E8%AE%AE/</url>
+    <content><![CDATA[<p>本文包括 <code>UART</code> <code>IIC</code> <code>SCCB</code> <code>SPI</code> 总线协议的解析，使用方法，驱动编写思路。</p>
 <span id="more"></span>
 
-
-<h1 id="子系统"><a href="#子系统" class="headerlink" title="子系统"></a>子系统</h1><h2 id="GPIO"><a href="#GPIO" class="headerlink" title="GPIO"></a>GPIO</h2><h2 id="IIC"><a href="#IIC" class="headerlink" title="IIC"></a>IIC</h2><h2 id="SPI"><a href="#SPI" class="headerlink" title="SPI"></a>SPI</h2>]]></content>
+<h1 id="IIC"><a href="#IIC" class="headerlink" title="IIC"></a>IIC</h1><p>一种<strong>同步串行</strong>的<strong>半双工</strong>总线，使用一根数据线<strong>SDA</strong>和一根时钟线<strong>SCL</strong>来传输数据，具有结构简单，接口连接方便，成本低的特点，速率再100kbps-400kbps之间。</p>
+<h2 id="连接方式"><a href="#连接方式" class="headerlink" title="连接方式"></a>连接方式</h2><p><img src="/../image/IIClink.png" alt="IIC link"></p>
+<h2 id="通信方式"><a href="#通信方式" class="headerlink" title="通信方式"></a>通信方式</h2><h3 id="起始信号-和-终止信号"><a href="#起始信号-和-终止信号" class="headerlink" title="起始信号 和 终止信号"></a>起始信号 和 终止信号</h3><p>在时钟线为<strong>高电平</strong>时，数据线<strong>由高电平跳变到低</strong>电平，表示起始信号。<br>在时钟线为<strong>高电平</strong>时，数据线<strong>由低电平跳变到高</strong>电平，表示终止信号。<br><img src="/../image/IICstart.png" alt="IIC start"></p>
+<h3 id="数据"><a href="#数据" class="headerlink" title="数据"></a>数据</h3><p>数据传输时，在时钟线为高电平时，要求数据线的数据保持稳定，只有在时钟线为低电平时，数据线的数据才能发生变化。一个时钟周期完成1bit数据的传输。<br>每一个字节必须保证是<strong>8</strong>位长度。数据传送时，先传送最<strong>高位</strong>（MSB），每一个被传送的字节后面都必须跟随一位<strong>应答位</strong>（即一帧共有9位）。<br><img src="/../image/IICdata.png" alt="IIC data"></p>
+<h3 id="应答"><a href="#应答" class="headerlink" title="应答"></a>应答</h3><p>在时钟线为高电平时，数据线由高电平跳变到低电平，表示应答位。<br>在时钟线为高电平时，数据线由低电平跳变到高电平，表示非应答位。</p>
+<h3 id="寻址"><a href="#寻址" class="headerlink" title="寻址"></a>寻址</h3><p>IIC总线支持7、8、10位寻址，主机在起始信号后必须传送一个从机的地址（7位），第<strong>8位</strong>是数据的传送方向位（R&#x2F;W），用“0”表示主机发送数据（W），“1”表示主机接收数据（R）。总线上的每个从机都将这7位地址码与自己的地址进行比较，如果相同，则认为自己被主机寻址，根据R&#x2F;W位将自己定为发送器或接收器。<br><img src="/../image/IIC7.png" alt="IIC 7"><br>8位寻址和7位相似，只不过厂商在提供地址时，将第八位读写位包含在了地址中，所以前7位才是真正的地址。<br><img src="/../image/IIC8.png" alt="IIC 8"><br>10位寻址略有不同，10位地址需要分两帧发送，其中第一帧的前5位是固定的<code>11110</code>,后跟地址的高两位，最后一位为读写位，第二帧为地址的低8位。<br><img src="/../image/IIC10.png" alt="IIC 10"></p>
+<h2 id="数据读写"><a href="#数据读写" class="headerlink" title="数据读写"></a>数据读写</h2><p><strong>写操作</strong>：主机发送起始信号，发送从机地址和写信号，从机应答，主机发送数据，从机应答，主机发送终止信号。<br><code>start + (7bit从机地址+1bit写0) + ack + (8bit/16bit寄存器地址) + ack + (8bit/16bit数据) + ack + stop</code><br><img src="/../image/IICwrite.png" alt="IIC write"><br><strong>读操作</strong>：主机发送起始信号，发送从机地址和写信号，从机应答，主机再次发送起始信号，发送从机地址和读信号，应答，主机接受数据，不给应答，主机发送终止信号。<br><img src="/../image/IICread.png" alt="IIC read"></p>
+<h2 id="速率"><a href="#速率" class="headerlink" title="速率"></a>速率</h2><p>100KHz 高速、400KHz全速、3.4MHz高速</p>
+<h2 id="特点"><a href="#特点" class="headerlink" title="特点"></a>特点</h2><ul>
+<li>串行通信，只需要两根线，数据线和时钟线</li>
+<li>半双工通信，数据只能单向传输</li>
+<li>串行数据传输，具备应答机制。</li>
+</ul>
+]]></content>
   </entry>
   <entry>
     <title>系统移植</title>
@@ -393,6 +398,14 @@
 <h1 id="rootfs"><a href="#rootfs" class="headerlink" title="rootfs"></a>rootfs</h1>]]></content>
   </entry>
   <entry>
+    <title>线程间通信</title>
+    <url>/2022/10/10/%E7%BA%BF%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1/</url>
+    <content><![CDATA[<p>本文包含线程的介绍使用，以及线程间的通信方式，解决多线程中的竞态问题。</p>
+<span id="more"></span>
+
+<h1 id="线程"><a href="#线程" class="headerlink" title="线程"></a>线程</h1>]]></content>
+  </entry>
+  <entry>
     <title>视频流移植</title>
     <url>/2023/01/25/%E8%A7%86%E9%A2%91%E6%B5%81%E7%A7%BB%E6%A4%8D/</url>
     <content><![CDATA[<p>本文包含确前置准备确认、内核驱动移植、<code>mjpeg-streamer</code> 移植、移植中遇到的错误和可能遇到的错误、以及解决方案、配置网页显示等内容。</p>
@@ -439,18 +452,5 @@
 <h2 id="3-Init-v4L2-failed-exit-fatal-n-init-VideoIn-failed"><a href="#3-Init-v4L2-failed-exit-fatal-n-init-VideoIn-failed" class="headerlink" title="3. Init v4L2 failed !! exit fatal \n init_VideoIn failed"></a>3. <code>Init v4L2 failed !! exit fatal \n init_VideoIn failed</code></h2><p>可能是由于摄像头支持YUV，而不是JPEG格式，需要修改start.sh文件</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">./mjpg_streamer -i &quot;./input_uvc.so -y&quot; -o &quot;./output_http.so -w ./www&quot; </span><br></pre></td></tr></table></figure>
 <h2 id="4-获得帮助"><a href="#4-获得帮助" class="headerlink" title="4. 获得帮助"></a>4. 获得帮助</h2><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">./mjpg_streamer -h</span><br></pre></td></tr></table></figure>]]></content>
-  </entry>
-  <entry>
-    <title></title>
-    <url>/2023/08/13/C/</url>
-    <content><![CDATA[]]></content>
-  </entry>
-  <entry>
-    <title>线程间通信</title>
-    <url>/2022/10/10/%E7%BA%BF%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1/</url>
-    <content><![CDATA[<p>本文包含线程的介绍使用，以及线程间的通信方式，解决多线程中的竞态问题。</p>
-<span id="more"></span>
-
-<h1 id="线程"><a href="#线程" class="headerlink" title="线程"></a>线程</h1>]]></content>
   </entry>
 </search>
