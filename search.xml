@@ -440,4 +440,17 @@
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">./mjpg_streamer -i &quot;./input_uvc.so -y&quot; -o &quot;./output_http.so -w ./www&quot; </span><br></pre></td></tr></table></figure>
 <h2 id="4-获得帮助"><a href="#4-获得帮助" class="headerlink" title="4. 获得帮助"></a>4. 获得帮助</h2><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">./mjpg_streamer -h</span><br></pre></td></tr></table></figure>]]></content>
   </entry>
+  <entry>
+    <title></title>
+    <url>/2023/08/13/C/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>线程间通信</title>
+    <url>/2022/10/10/%E7%BA%BF%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1/</url>
+    <content><![CDATA[<p>本文包含线程的介绍使用，以及线程间的通信方式，解决多线程中的竞态问题。</p>
+<span id="more"></span>
+
+<h1 id="线程"><a href="#线程" class="headerlink" title="线程"></a>线程</h1>]]></content>
+  </entry>
 </search>
