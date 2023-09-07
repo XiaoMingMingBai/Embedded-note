@@ -28,7 +28,7 @@
 <meta property="og:description" content="本文包含">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2022-10-25T14:07:08.000Z">
-<meta property="article:modified_time" content="2023-08-12T10:53:23.946Z">
+<meta property="article:modified_time" content="2023-08-17T12:52:30.207Z">
 <meta property="article:author" content="XiaoMingMingBai">
 <meta name="twitter:card" content="summary">
 
@@ -210,7 +210,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2023-08-12 18:53:23" itemprop="dateModified" datetime="2023-08-12T18:53:23+08:00">2023-08-12</time>
+                <time title="修改时间：2023-08-17 20:52:30" itemprop="dateModified" datetime="2023-08-17T20:52:30+08:00">2023-08-17</time>
               </span>
 
           <br>
@@ -219,14 +219,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>5</span>
+              <span>1.1k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>1 分钟</span>
+              <span>2 分钟</span>
             </span>
 
         </div>
@@ -241,7 +241,45 @@
         <p>本文包含</p>
 <span id="more"></span>
 
-<h1 id="库"><a href="#库" class="headerlink" title="库"></a>库</h1>
+<h1 id="库"><a href="#库" class="headerlink" title="库"></a>库</h1><h2 id="静态库"><a href="#静态库" class="headerlink" title="静态库"></a>静态库</h2><p>静态库的格式是libxxx.a的格式，它是由xxx.c文件编译而来的。用户在使用静态库的时候，会将库中函数的实现和用户代码的实现最终编译生成一个可执行程序。可执行程序的体积比较大，但是在运行可执行程序的时候不需要这个库文件了。所以静态库的程序运行的效率比较高。更新的时候比较麻烦。</p>
+<h3 id="制作静态库"><a href="#制作静态库" class="headerlink" title="制作静态库"></a>制作静态库</h3><p>.</p>
+<ul>
+<li>bin</li>
+<li>inc<ul>
+<li>linklist.h</li>
+</ul>
+</li>
+<li>lib<ul>
+<li>linklist.c</li>
+</ul>
+</li>
+<li>src<ul>
+<li>main.c</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 制作</span></span><br><span class="line">gcc -c lib/linklist.c -o lib/linklist.o -I inc</span><br><span class="line"><span class="comment"># -c 表示编译，不链接</span></span><br><span class="line"><span class="comment"># -I 表示头文件的路径</span></span><br><span class="line"><span class="comment"># -o 表示输出的文件名</span></span><br><span class="line">ar -cr lib/liblinklist.a lib/linklist.o</span><br><span class="line"><span class="comment"># -c 表示创建一个库</span></span><br><span class="line"><span class="comment"># -r 表示插入一个文件</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 使用</span></span><br><span class="line">gcc main.c -L ../lib -llinklist -I ../inc -o bin/main</span><br><span class="line"><span class="comment"># -L 表示库文件的路径</span></span><br><span class="line"><span class="comment"># -l 表示库文件的名字</span></span><br><span class="line"><span class="comment"># -I 表示头文件的路径</span></span><br><span class="line"><span class="comment"># -o 表示输出的文件名</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="动态库-共享库"><a href="#动态库-共享库" class="headerlink" title="动态库(共享库)"></a>动态库(共享库)</h2><p>动态库的格式是 libxxx.so 的格式，它是由 xxx.c 文件编译而来的。用户在使用动态库的时候，会将库中函数的符号表和用户代码的实现最终编译生成一个可执行程序。可执行程序的体积比较小，但是在运行可执行程序的时候需要在libxxx.so库中找函数的实现。依赖动态库的程序运行的效率比较低。更新的时候比较容易。动态库文件可以同时被多个程序同时使用，所以动态库又叫共享库。</p>
+<h3 id="制作动态库"><a href="#制作动态库" class="headerlink" title="制作动态库"></a>制作动态库</h3><p>.</p>
+<ul>
+<li>bin</li>
+<li>inc<ul>
+<li>linklist.h</li>
+</ul>
+</li>
+<li>lib<ul>
+<li>linklist.c</li>
+</ul>
+</li>
+<li>src<ul>
+<li>main.c</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 制作</span></span><br><span class="line">gcc -fPIC -shared lib/linklist.c -o lib/liblinklist.so -I inc</span><br><span class="line"><span class="comment"># -fPIC 生成与位置无关的库文件</span></span><br><span class="line"><span class="comment"># -shared 表示生成动态库</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 使用</span></span><br><span class="line"><span class="comment"># 3种方式</span></span><br><span class="line"><span class="comment"># 1. 将动态库文件放到系统目录下</span></span><br><span class="line">sudo <span class="built_in">cp</span> lib/liblinklist.so /lib</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. 临时指定（当前终端有效）</span></span><br><span class="line"><span class="built_in">export</span> LD_LIBRARY_PATH=lib</span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. 通过系统配置文件指定（永久有效）</span></span><br><span class="line">sudo vim /etc/ld.so.conf.d/libc.conf</span><br><span class="line"><span class="comment"># /home/xxx/lib/</span></span><br><span class="line">sudo ldconfig</span><br><span class="line"></span><br><span class="line"><span class="comment"># 编译</span></span><br><span class="line">gcc src/main.c -L lib -llinklist -I inc -o bin/main</span><br><span class="line"><span class="comment"># -L 表示库文件的路径</span></span><br><span class="line"><span class="comment"># -I 表示头文件的路径</span></span><br><span class="line"><span class="comment"># -o 表示输出的文件名</span></span><br></pre></td></tr></table></figure>
+
+
     </div>
 
     
@@ -260,8 +298,8 @@
       <i class="fa fa-chevron-left"></i> 线程以及线程间的竞态问题解决
     </a></div>
       <div class="post-nav-item">
-    <a href="/2022/11/15/%E5%A5%97%E6%8E%A5%E5%AD%97/" rel="next" title="套接字">
-      套接字 <i class="fa fa-chevron-right"></i>
+    <a href="/2022/11/15/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" rel="next" title="数据结构">
+      数据结构 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -321,7 +359,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%BA%93"><span class="nav-number">1.</span> <span class="nav-text">库</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%BA%93"><span class="nav-number">1.</span> <span class="nav-text">库</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9D%99%E6%80%81%E5%BA%93"><span class="nav-number">1.1.</span> <span class="nav-text">静态库</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%B6%E4%BD%9C%E9%9D%99%E6%80%81%E5%BA%93"><span class="nav-number">1.1.1.</span> <span class="nav-text">制作静态库</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8A%A8%E6%80%81%E5%BA%93-%E5%85%B1%E4%BA%AB%E5%BA%93"><span class="nav-number">1.2.</span> <span class="nav-text">动态库(共享库)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%B6%E4%BD%9C%E5%8A%A8%E6%80%81%E5%BA%93"><span class="nav-number">1.2.1.</span> <span class="nav-text">制作动态库</span></a></li></ol></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -335,7 +373,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">15</span>
+          <span class="site-state-item-count">18</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -380,12 +418,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">154k</span>
+    <span title="站点总字数">245k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">4:40</span>
+    <span title="站点阅读时长">7:25</span>
 </div>
   <div class="powered-by">
     <!--由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动 -->
