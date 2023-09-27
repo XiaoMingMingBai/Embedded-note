@@ -187,7 +187,7 @@
   </entry>
   <entry>
     <title>Git &amp; Github 的使用</title>
-    <url>/2021/05/10/git/</url>
+    <url>/2022/08/10/git/</url>
     <content><![CDATA[<p>本文包含 <code>Git</code> 和 <code>Github</code> 的介绍和使用方法，对于不了解Git和Github的同志，可以快速入门享受Git和Github的乐趣。   </p>
 <span id="more"></span>
 
@@ -229,7 +229,7 @@
   </entry>
   <entry>
     <title>sys_select 剖析</title>
-    <url>/2022/07/10/sys_select%E5%86%85%E9%83%A8%E5%AE%9E%E7%8E%B0/</url>
+    <url>/2023/04/10/sys_select%E5%86%85%E9%83%A8%E5%AE%9E%E7%8E%B0/</url>
     <content><![CDATA[<p>本文包含对 <code>sys_select</code> 从内核层面的实现进行剖析</p>
 <span id="more"></span>
 
@@ -242,7 +242,7 @@
   </entry>
   <entry>
     <title>库的制作及使用</title>
-    <url>/2022/10/25/%E5%BA%93%E7%9A%84%E5%88%B6%E4%BD%9C%E5%8F%8A%E4%BD%BF%E7%94%A8/</url>
+    <url>/2022/09/25/%E5%BA%93%E7%9A%84%E5%88%B6%E4%BD%9C%E5%8F%8A%E4%BD%BF%E7%94%A8/</url>
     <content><![CDATA[<p>本文包含</p>
 <span id="more"></span>
 
@@ -437,7 +437,7 @@
   </entry>
   <entry>
     <title>线程以及线程间的竞态问题解决</title>
-    <url>/2022/10/10/%E7%BA%BF%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1/</url>
+    <url>/2023/02/15/%E7%BA%BF%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1/</url>
     <content><![CDATA[<p>本文包含线程的介绍使用，以及线程间的通信方式，解决多线程中的竞态问题。阅读建议对进程有所了解。</p>
 <span id="more"></span>
 
@@ -569,7 +569,7 @@
   </entry>
   <entry>
     <title>进程以及进程间的通信</title>
-    <url>/2022/10/10/%E8%BF%9B%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1/</url>
+    <url>/2023/02/10/%E8%BF%9B%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1/</url>
     <content><![CDATA[<p>本文包含进程的介绍和使用，以及进程间的通信方式。</p>
 <span id="more"></span>
 
@@ -920,12 +920,125 @@
   </entry>
   <entry>
     <title>套接字</title>
-    <url>/2022/11/15/%E5%A5%97%E6%8E%A5%E5%AD%97/</url>
-    <content><![CDATA[]]></content>
+    <url>/2023/02/02/%E5%A5%97%E6%8E%A5%E5%AD%97/</url>
+    <content><![CDATA[<span id="more"></span>
+
+<h1 id="套接字socket"><a href="#套接字socket" class="headerlink" title="套接字socket"></a>套接字socket</h1><p><code>socket</code>套接字本来是用于同主机的进程间通信的。后来有了<code>TCP/IP协议族</code>加入后又进行的功能的拓展与升级，实现了多个不同主机间的进程间通信。</p>
+<p>Linux内核的五大功能：</p>
+<ol>
+<li>进程间管理：进程间调度及上下文切换</li>
+<li>内存管理：内存的分配与回收。</li>
+<li>文件管理：将二进制数据进行长时间的保存及管理。</li>
+<li>设备管理：一切皆文件。</li>
+<li>网络管理：网络协议栈的管理。</li>
+</ol>
+<p><code>socket</code>是一个系统调用的接口，会返回一个文件描述符，用户通过网络收发数据时，只需对此文件描述符进行读写操作即可，读就是接收，写就是发送。相当于把复杂的网络通信过程转换成了IO操作。</p>
+<p>也可以将<code>Socket</code>(套接字)看成是两个网络应用程序进行通信时，各自通信连接中的端点，这是一个逻辑上的概念。</p>
+<p>套接字<code>Socket</code> &#x3D;（IP地址：端口号），套接字的表示方法是点分十进制的<code>lP</code>地址后面写上端口号，中间用冒号或逗号隔开。每一个传输层连接唯一地被通信两端的两个端点（即两个套接字）所确定。<br>例如：如果IP地址是210.37.145.1，而端口号是23，那么得到套接字就是(210.37.145.1:23)</p>
+<h2 id="套接字类型"><a href="#套接字类型" class="headerlink" title="套接字类型"></a>套接字类型</h2><p>**流套接字(SOCK_STREAM)**：流套接字用于提供面向连接、可靠的数据传输服务。该服务将保证数据能够实现无差错、无重复送，并按顺序接收。流套接字之所以能够实现可靠的数据服务，原因在于其使用了传输控制协议，即TCP(The Transmission Control Protocol)协议</p>
+<p>**数据报套接字(SOCK_DGRAM)**：数据报套接字提供一种无连接的服务。该服务并不能保证数据传输的可靠性,数据有可能在传输过程中丢失或出现数据重复，且无法保证顺序地接收到数据。数据报套接字使用UDP( User DatagramProtocol)协议进行数据的传输。由于数据报套接字不能保证数据传输的可靠性，对于有可能出现的数据丢失情况，需要在程序中做相应的处理</p>
+<p>**原始套接字(SOCK_RAW)**：原始套接字与标准套接字(标准套接字指的是前面介绍的流套接字和数据报套接字)的区别在于：原始套接字可以读写内核没有处理的IP数据包，而流套接字只能读取TCP协议的数据，数据报套接字只能读取UDP协议的数据。因此，如果要访问其他协议发送的数据必须使用原始套接</p>
+<h2 id="字节序"><a href="#字节序" class="headerlink" title="字节序"></a>字节序</h2><p>字节序是计算机存储多字节数据的方式，目前主流的方式有：大端字节序和小端字节序，字节序主要是针对多字节的数据类型，比如 short、int 等类型</p>
+<ul>
+<li>小端字节序<br>数据高位字节存储在内存的高地址上，数据低位字节存储在内存的低地址上</li>
+<li>大端字节序<br>数据高位字节存储在内存的低地址上，数据低位字节存储在内存的高位地址上<br><img src="/../image/BigSmall.png" alt="Alt text"></li>
+</ul>
+<p>因为大端对人们阅读更友好，所以 IEEE 标准协会规定除非有明确说明，否则网络协议都使用大端字节序， 像 TCP&#x2F;IP 就使用大端序。而计算机的存储则以小端序为主。</p>
+<h3 id="判断大小端"><a href="#判断大小端" class="headerlink" title="判断大小端"></a>判断大小端</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> <span class="type">const</span> *argv[])</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">unsigned</span> <span class="type">int</span> numb = <span class="number">0x12345678</span>;</span><br><span class="line">    <span class="type">char</span>* p = (<span class="type">char</span>*)&amp;numb;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;%x \n&quot;</span>,p[<span class="number">0</span>]);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="大小端转换"><a href="#大小端转换" class="headerlink" title="大小端转换"></a>大小端转换</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">//如果是Linux：</span></span><br><span class="line"><span class="comment">//1969年留下来的头文件。</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;arpa/inet.h&gt;</span></span></span><br><span class="line"><span class="comment">//如果是Windows:</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;winsocket.h&gt;</span></span></span><br><span class="line"></span><br><span class="line">ntohl(u_long netOrder)       # uint32 类型 网络序转主机序</span><br><span class="line">htonl(u_short hostOrder)       # uint32 类型 主机序转网络序</span><br><span class="line"></span><br><span class="line">ntohs(u_long netOrder)          # uint16 类型 网络序转主机序</span><br><span class="line">htons(u_short hostOrder)        # uint16 类型 主机序转网络序</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> <span class="type">const</span> *argv[])</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">unsigned</span> <span class="type">short</span> numb = <span class="number">0x1234</span>;</span><br><span class="line">    <span class="type">char</span>* p = (<span class="type">char</span>*)&amp;numb;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;%x \n&quot;</span>,p[<span class="number">0</span>]);</span><br><span class="line">    <span class="comment">//主机字节序转网络字节络：</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">short</span> numb_big = htons(numb);</span><br><span class="line">    p = (<span class="type">char</span>*)&amp;numb_big;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;%x \n&quot;</span>,p[<span class="number">0</span>]);</span><br><span class="line">    <span class="comment">//网络字节序转主机字节序：</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">short</span> numb_small = ntohs(numb_big);</span><br><span class="line">    p = (<span class="type">char</span>*)&amp;numb_small;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;%x \n&quot;</span>,p[<span class="number">0</span>]);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="IP地址转换"><a href="#IP地址转换" class="headerlink" title="IP地址转换"></a>IP地址转换</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 将点分十进制字符串转换成网络字节序的无符号四字节整形的转换函数：</span></span><br><span class="line"><span class="type">in_addr_t</span> <span class="title function_">inet_addr</span><span class="params">(<span class="type">const</span> <span class="type">char</span>* cp)</span>;自动转成网络字节序。</span><br><span class="line"><span class="comment">// 将网络字节序的无符号四字节整型的ip 地址转成点分十进制的字符串：</span></span><br><span class="line"><span class="type">char</span>* <span class="title function_">inet_ntoa</span><span class="params">(<span class="keyword">struct</span> in_addr in)</span>;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;netinet/in.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;arpa/inet.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> <span class="type">const</span> *argv[])</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">const</span> <span class="type">char</span>* IP = <span class="string">&quot;192.168.0.1&quot;</span>;</span><br><span class="line">    <span class="comment">//inet_addr把点分十进制字符串转换成网络字节序的无符号4字节整形。</span></span><br><span class="line">    <span class="type">in_addr_t</span> netOrderIp = inet_addr(IP);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;%d \n&quot;</span>,netOrderIp);</span><br><span class="line">    <span class="type">unsigned</span> <span class="type">char</span>* p = (<span class="type">unsigned</span> <span class="type">char</span>*)&amp;netOrderIp;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;%d.%d.%d.%d \n&quot;</span>,p[<span class="number">0</span>],p[<span class="number">1</span>],p[<span class="number">2</span>],p[<span class="number">3</span>]);</span><br><span class="line">    <span class="comment">//通过inet_htoa(in_addr )把网络字节序的无符号整形转换成char*的字符串。</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">in_addr</span> <span class="title">ip</span> =</span> &#123;<span class="number">0</span>&#125;;</span><br><span class="line">    ip.s_addr = netOrderIp;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;------------------------------\n&quot;</span>);</span><br><span class="line">    <span class="type">char</span>* strip = inet_ntoa(ip);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;%s \n&quot;</span>,strip);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="端口号"><a href="#端口号" class="headerlink" title="端口号"></a>端口号</h2><p>网络通信中的两个进程间互联时的一种约定好的进程的标识</p>
+<p>端口号使用规则 ：<code>TCP</code>与<code>UDP</code>段结构中端口地址都是16比特，可以有在0—65535范围内的端口号。对于这65536个端口号有以下的使用规定</p>
+<ol>
+<li>端口号小于256的定义为常用端口，服务器一般都是通过常用端口号来识别的。任何<code>TCP/IP</code>实现所提供的服务都用1—1023之间的端口号，是由<code>ICANN</code>来管理的；端口号从1024—49151是可被注册的端口，也成为“用户端口”，49152-65535被<code>IANA</code>指定为特殊服务使用。在<code>Linux</code>中可以通过<code>/etc/services</code>下可查看已经占用的端口号。</li>
+<li>客户端只需保证该端口号在本机上是唯一的就可以了。客户端端口号因存在时间很短暂又称临时端口号。</li>
+<li>大多数TCP&#x2F;IP实现给临时端口号分配1024—5000之间的端口号。大于5000的端口号是为其他服务器预留的。</li>
+</ol>
+<p>端口号是<code>2^16</code>次方，所以是超过了一个字节，是两个字节，所以在指定端口时，也需要注意向网络字节序进行转换的问题。<br>所以字节或字节数组在网络传输不需要关系字节序的问题，但是对于多字节的数据类型一定要注意字节序的问题。</p>
+<h1 id="Client-Server-C-S"><a href="#Client-Server-C-S" class="headerlink" title="Client&#x2F;Server(C&#x2F;S)"></a>Client&#x2F;Server(C&#x2F;S)</h1><p><img src="/../image/CSModel.png" alt="Alt text"></p>
+<ol>
+<li>创建套接字</li>
+<li>套接字绑定</li>
+<li>监听套接字</li>
+<li>建立链接请求</li>
+<li>读写</li>
+<li>关闭套接字</li>
+</ol>
+<h2 id="创建套接字-socket"><a href="#创建套接字-socket" class="headerlink" title="创建套接字 - socket"></a>创建套接字 - <code>socket</code></h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/types.h&gt;</span>        </span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * @功能：创建套接字，并返回一个套接字文件描述符。</span></span><br><span class="line"><span class="comment"> * @参数：</span></span><br><span class="line"><span class="comment"> *     @domain：domain参数指定通信域;这将选择用于通信的协议族。</span></span><br><span class="line"><span class="comment"> *     这些系列被定义在&lt;sys/socket.h&gt;中。</span></span><br><span class="line"><span class="comment"> *     目前被Linux内核理解的格式包括:</span></span><br><span class="line"><span class="comment"> *         Name                Purpose                          Man page</span></span><br><span class="line"><span class="comment"> *        AF_UNIX, AF_LOCAL   Local communication             unix(7)</span></span><br><span class="line"><span class="comment"> *        AF_INET             IPv4 Internet protocols          ip(7)</span></span><br><span class="line"><span class="comment"> *        AF_INET6            IPv6 Internet protocols          ipv6(7)</span></span><br><span class="line"><span class="comment"> *        AF_IPX              IPX - Novell protocols</span></span><br><span class="line"><span class="comment"> *        AF_NETLINK          Kernel user interface device     netlink(7)</span></span><br><span class="line"><span class="comment"> *        AF_X25              ITU-T X.25 / ISO-8208 protocol   x25(7)</span></span><br><span class="line"><span class="comment"> *        AF_AX25             Amateur radio AX.25 protocol</span></span><br><span class="line"><span class="comment"> *        AF_ATMPVC           Access to raw ATM PVCs</span></span><br><span class="line"><span class="comment"> *        AF_APPLETALK        AppleTalk                        ddp(7)</span></span><br><span class="line"><span class="comment"> *        AF_PACKET           Low level packet interface       packet(7)</span></span><br><span class="line"><span class="comment"> *        AF_ALG              Interface to kernel crypto API</span></span><br><span class="line"><span class="comment"> *     @type：套接字具有指定的类型，该类型指定通信语义。目前定义的类型有: </span></span><br><span class="line"><span class="comment"> *       SOCK_STREAM  ----&gt;流式套接字</span></span><br><span class="line"><span class="comment"> * </span></span><br><span class="line"><span class="comment"> *       SOCK_DGRAM   ----&gt;数据报套接字</span></span><br><span class="line"><span class="comment"> * </span></span><br><span class="line"><span class="comment"> *       SOCK_RAW     ----&gt;原始套接字</span></span><br><span class="line"><span class="comment"> *     @protocol：协议指定套接字使用的特定协议。在给定的协议族中，</span></span><br><span class="line"><span class="comment"> *     通常只存在“一个协议”来支持特定的套接字类型，在这种情况下，“协议默认为0”。</span></span><br><span class="line"><span class="comment"> * @返回值：成功返回套接字文件描述符，失败返回-1。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span>  <span class="title function_">socket</span><span class="params">(<span class="type">int</span>  domain, <span class="type">int</span> type,<span class="type">int</span> protocol)</span>;</span><br></pre></td></tr></table></figure>
+
+<p><strong>内核中的事情：</strong><br>当进程调用socket()函数创建一个套接字时，操作系统会在内核中分配一些资源来管理这个套接字。具体来说，内核会创建一个数据结构来表示该套接字，该数据结构存储了套接字的各种属性，如协议类型、地址信息、发送和接收缓冲区等。此外，内核还会分配一些缓存区来存储套接字的数据，例如接收到的数据和将要发送的数据。</p>
+<p>当进程调用bind()函数绑定套接字地址时，内核会将指定的套接字地址绑定到套接字数据结构中，以便进程可以通过该套接字地址来发送和接收数据。如果进程调用listen()函数将套接字转换为被动套接字，内核还会为套接字创建一个等待连接的队列。</p>
+<p>总之，socket()函数会在内核中开辟一些资源来管理套接字，包括套接字的数据结构和缓存区等。这些资源会随着套接字的使用而不断变化，内核会负责管理这些资源，以保证进程可以正常地发送和接收数据。</p>
+<h2 id="套接字绑定-bind"><a href="#套接字绑定-bind" class="headerlink" title="套接字绑定 - bind"></a>套接字绑定 - <code>bind</code></h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/types.h&gt;</span>          <span class="comment">/* See NOTES */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * @功能：给套接字绑定一个ip地址及端口，底层为套接字标识的区域分配空间。</span></span><br><span class="line"><span class="comment"> * @参数：</span></span><br><span class="line"><span class="comment"> *      @sockfd：套接字文件描述符。</span></span><br><span class="line"><span class="comment"> *      @addr：指向要绑定给套接字的地址信息的指针。</span></span><br><span class="line"><span class="comment"> *      @addrlen：地址信息的长度。</span></span><br><span class="line"><span class="comment"> * @返回值：成功返回0，失败返回-1。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">bind</span><span class="params">(<span class="type">int</span> sockfd, <span class="type">const</span> <span class="keyword">struct</span> sockaddr *addr,<span class="type">socklen_t</span> addrlen)</span>;</span><br><span class="line"><span class="comment">//给套接字绑定一个ip地址及端口，底层为套接字标识的区域分配空间。</span></span><br><span class="line"><span class="comment">// sockaddr 为一个通用结构体，主要用的转型使用。</span></span><br><span class="line"><span class="comment">//因为以后可能会选择不同的通信方式比如ipv6或其它等。不同的通信方式结构体都不一样。</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// IPv4套接字信息结构体：</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> </span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">     <span class="type">sa_family_t</span>    sin_family; <span class="comment">/* address family: AF_INET */</span></span><br><span class="line">     <span class="type">in_port_t</span>      sin_port;   <span class="comment">/* port in network byte order */</span></span><br><span class="line">     <span class="class"><span class="keyword">struct</span> <span class="title">in_addr</span> <span class="title">sin_addr</span>;</span>   <span class="comment">/* internet address */</span></span><br><span class="line">&#125;;</span><br><span class="line"><span class="comment">/* Internet address. */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">in_addr</span> </span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">     <span class="type">uint32_t</span>       s_addr;     <span class="comment">/* address in network byte order */</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// IPv6套接字信息结构体：</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in6</span> &#123;</span></span><br><span class="line">    <span class="type">sa_family_t</span>     sin6_family;   <span class="comment">// address family (AF_INET6)</span></span><br><span class="line">    <span class="type">in_port_t</span>       sin6_port;     <span class="comment">// port number</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">in6_addr</span> <span class="title">sin6_addr</span>;</span>     <span class="comment">// IPv6 address</span></span><br><span class="line">    <span class="type">uint32_t</span>        sin6_flowinfo; <span class="comment">// IPv6 flow information</span></span><br><span class="line">    <span class="type">uint32_t</span>        sin6_scope_id; <span class="comment">// IPv6 scope ID</span></span><br><span class="line">&#125;;</span><br><span class="line"><span class="comment">/* Internet address. */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">in6_addr</span> &#123;</span></span><br><span class="line">    <span class="class"><span class="keyword">union</span> &#123;</span></span><br><span class="line">        <span class="type">uint8_t</span>  __u6_addr8[<span class="number">16</span>];</span><br><span class="line">        <span class="type">uint16_t</span> __u6_addr16[<span class="number">8</span>];</span><br><span class="line">        <span class="type">uint32_t</span> __u6_addr32[<span class="number">4</span>];</span><br><span class="line">    &#125; __u6_addr; <span class="comment">// 128-bit IPv6 address</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 在使用bind时，使用通用套接字sockaddr类型指针来进行，</span></span><br><span class="line"><span class="comment">// 因为bind函数只用到协议标识，端口与地址。所以需要进行一下指针类型转型</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>内核中的事情：</strong>  </p>
+<ol>
+<li>内核会检查传递的网络信息结构是否合法。如果结构体不合法，bind()函数会失败并返回一个错误。</li>
+<li>如果结构体合法，则内核会将套接字与指定的网络地址和端口号绑定。这将为套接字分配一个本地 IP 地址和端口号，并将该地址添加到套接字的控制块中。</li>
+<li>如果指定的端口号为0，则内核会为套接字分配一个可用的随机的端口号。</li>
+<li>如果套接字绑定的是 INADDR_ANY（通配地址），则内核会将套接字绑定到所有可用的网络接口，并为套接字分配一个本地 IP 地址。</li>
+<li>内核会根据套接字的类型和协议确定套接字的传输方式，并分配一些内部数据结构和缓冲区来管理套接字。</li>
+</ol>
+<p>总之，通过将套接字的网络信息结构传递给bind()函数，内核会将套接字与指定的网络地址和端口号绑定，并执行一系列操作来为套接字分配地址、管理套接字并提供网络通信服务。</p>
+<h2 id="监听套接字-listen"><a href="#监听套接字-listen" class="headerlink" title="监听套接字 - listen"></a>监听套接字 - <code>listen</code></h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/types.h&gt;</span>          <span class="comment">/* See NOTES */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * @功能：将套接字转换为被动套接字，用于监听客户端的连接请求。</span></span><br><span class="line"><span class="comment"> * @参数：</span></span><br><span class="line"><span class="comment"> *      @sockfd：套接字文件描述符。</span></span><br><span class="line"><span class="comment"> *      @backlog：指定内核为相应套接字排队的最大连接个数。</span></span><br><span class="line"><span class="comment"> * @返回值：成功返回0，失败返回-1。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">listen</span><span class="params">(<span class="type">int</span> sockfd, <span class="type">int</span> backlog)</span>;</span><br></pre></td></tr></table></figure>
+
+<p><strong>内核中的事情：</strong>  </p>
+<ol>
+<li>内核会将该套接字标记为被动套接字（passive socket），即告诉内核该套接字将被用来接受客户端连接请求。</li>
+<li>内核会创建一个等待连接的队列，并将该套接字加入到该队列中。客户端连接请求首先会被放入等待连接的队列中，然后再由进程调用accept()函数来处理它们。</li>
+<li>内核会开始监听该套接字，以便接受来自客户端的连接请求。这意味着内核会开始接受传入的连接请求，但并不会自动建立连接，而是将连接请求放入等待连接的队列中。</li>
+<li><code>listen()</code>函数会返回一个成功的状态，表示该套接字已经被设置为监听状态。</li>
+</ol>
+<p>总之，listen()函数背后内核会执行一系列的操作来将一个套接字设置为监听状态，包括创建等待连接的队列、加入套接字到等待连接队列、开始监听套接字等。通过这些操作，内核为进程提供了一种简单、可靠的方式来接受来自客户端的连接请求。</p>
+<h2 id="建立链接请求-accept"><a href="#建立链接请求-accept" class="headerlink" title="建立链接请求 - accept"></a>建立链接请求 - <code>accept</code></h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/types.h&gt;</span>          <span class="comment">/* See NOTES */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * @功能：接受客户端的连接请求，并返回一个新的套接字文件描述符。</span></span><br><span class="line"><span class="comment"> * @参数：</span></span><br><span class="line"><span class="comment"> *      @sockfd：套接字文件描述符。</span></span><br><span class="line"><span class="comment"> *      @addr：指向要绑定给套接字的地址信息的指针。</span></span><br><span class="line"><span class="comment"> *      @addrlen：地址信息的长度。</span></span><br><span class="line"><span class="comment"> * @返回值：成功返回新的套接字文件描述符，失败返回-1。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">accept</span><span class="params">(<span class="type">int</span> sockfd, <span class="keyword">struct</span> sockaddr *addr, <span class="type">socklen_t</span> *addrlen)</span>;</span><br></pre></td></tr></table></figure>
+
+<p><strong>内核中的事情：</strong>  </p>
+<ol>
+<li>当调用accept()函数时，内核会检查该套接字是否处于监听状态。如果不是，会阻塞等待直到该套接字处于监听状态。</li>
+<li>内核会检查等待连接的队列中是否有客户端连接请求，如果有，则内核会创建一个新的套接字来处理该客户端连接，并从等待连接的队列中删除该连接请求。如果没有，则accept()函数会阻塞等待，直到有连接请求到达为止。</li>
+<li>内核会为新创建的套接字分配一个新的文件描述符，并把它返回给进程。这个新的文件描述符和原来的套接字文件描述符是不同的。</li>
+<li>接下来，内核会为新创建的套接字建立一个连接，并返回一个连接成功的状态。</li>
+<li>如果连接建立成功，则进程就可以使用新的套接字来与客户端进行通信了。如果连接建立失败，则会返回一个错误码，进程需要根据错误码进行处理。</li>
+</ol>
+<p>总之，<code>accept()</code>函数背后内核会执行一系列的操作来处理客户端连接请求，包括检查监听状态、等待连接请求、创建新的套接字、分配新的文件描述符、建立连接等。通过这些操作，内核为进程提供了一种简单、可靠的方式来处理客户端连接请求。</p>
+<h2 id="通信的本质-read-write-—-数据收发"><a href="#通信的本质-read-write-—-数据收发" class="headerlink" title="通信的本质 - read()&#x2F;write() — 数据收发"></a>通信的本质 - read()&#x2F;write() — 数据收发</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * @功能：从套接字中读取数据。</span></span><br><span class="line"><span class="comment"> * @参数：</span></span><br><span class="line"><span class="comment"> *      @sockfd：套接字文件描述符。</span></span><br><span class="line"><span class="comment"> *      @buf：指向接收数据的缓冲区。</span></span><br><span class="line"><span class="comment"> *      @count：要读取的字节数。</span></span><br><span class="line"><span class="comment"> * @返回值：成功返回读取的字节数，失败返回-1。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">ssize_t</span> <span class="title function_">read</span><span class="params">(<span class="type">int</span> fd, <span class="type">void</span> *buf, <span class="type">size_t</span> count)</span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * @功能：向套接字中写入数据。</span></span><br><span class="line"><span class="comment"> * @参数：</span></span><br><span class="line"><span class="comment"> *      @sockfd：套接字文件描述符。</span></span><br><span class="line"><span class="comment"> *      @buf：指向发送数据的缓冲区。</span></span><br><span class="line"><span class="comment"> *      @count：要写入的字节数。</span></span><br><span class="line"><span class="comment"> * @返回值：成功返回写入的字节数，失败返回-1。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">ssize_t</span>  <span class="title function_">write</span><span class="params">(<span class="type">int</span> fd, <span class="type">const</span> <span class="type">void</span> *buf,<span class="type">size_t</span> count)</span>;</span><br></pre></td></tr></table></figure>
+
+<p><strong>内核中的事情：</strong>  </p>
+<p><strong>在调用read()函数读取套接字时</strong></p>
+<ol>
+<li>内核会检查套接字的接收缓冲区是否有数据可读。如果接收缓冲区为空，则<code>read()</code>函数会阻塞等待，直到有数据可读。</li>
+<li>如果接收缓冲区有数据可读，则内核会将数据从接收缓冲区复制到进程的缓冲区中。</li>
+<li>内核会检查进程的缓冲区是否有足够的空间来存储读取的数据。如果没有足够的空间，则<code>read()</code>函数会阻塞等待，直到有足够的空间为止。</li>
+<li>如果有足够的空间，则内核会将读取的数据从内核空间复制到进程的缓冲区中，并更新套接字的接收缓冲区的读指针。读指针指向下一个要读取的位置。</li>
+<li>r<code>ead()</code>函数会返回读取的字节数，如果读取到套接字关闭，则返回0。</li>
+</ol>
+<p>总之，调用<code>read()</code>函数读取套接字时，内核会执行一系列的操作来读取套接字中的数据，包括检查接收缓冲区、阻塞等待、读取数据、检查缓冲区空间、复制数据到进程空间等。通过这些操作，内核为进程提供了一种简单、可靠的方式来读取套接字中的数据。<br><strong>在调用write()函数写入套接字时</strong></p>
+<ol>
+<li>内核会将写入的数据从进程的缓冲区复制到套接字的发送缓冲区中。</li>
+<li>内核会检查套接字的发送缓冲区是否有足够的空间来存储写入的数据。如果发送缓冲区已满，则<code>write()</code>函数会阻塞等待，直到有足够的空间为止。</li>
+<li>如果发送缓冲区有足够的空间，则内核会将数据从进程空间复制到套接字的发送缓冲区中，并更新发送缓冲区的写指针。写指针指向下一个要写入的位置。</li>
+<li><code>write()</code>函数会返回写入的字节数。</li>
+</ol>
+<p>总之，调用<code>write()</code>函数写入套接字时，内核会执行一系列的操作来写入套接字中的数据，包括复制数据到发送缓冲区、检查缓冲区空间、更新写指针等。通过这些操作，内核为进程提供了一种简单、可靠的方式来写入套接字中的数据。</p>
+<h2 id="关闭套接字-close"><a href="#关闭套接字-close" class="headerlink" title="关闭套接字 - close"></a>关闭套接字 - <code>close</code></h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * @功能：关闭套接字。</span></span><br><span class="line"><span class="comment"> * @参数：</span></span><br><span class="line"><span class="comment"> *      @sockfd：套接字文件描述符。</span></span><br><span class="line"><span class="comment"> * @返回值：成功返回0，失败返回-1。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">close</span><span class="params">(<span class="type">int</span> sockfd)</span>;</span><br></pre></td></tr></table></figure>
+
+<p><strong>内核中的事情：</strong><br>当进程调用<code>close()</code>函数关闭套接字时，内核会释放该套接字占用的所有资源，包括套接字的数据结构、缓存区、等待连接的队列等。此时，进程不再能够使用这个套接字。</p>
+<p>另外，如果进程崩溃或者异常终止，内核会自动回收该进程占用的所有资源，包括该进程创建的所有套接字。这个过程称为垃圾回收（Garbage Collection），由操作系统内核自动完成。</p>
+<blockquote>
+<p>注意：如果有其他进程仍在使用某个套接字，那么该套接字的资源就不会被释放，直到所有使用该套接字的进程都调用了<code>close()</code>函数关闭它。这是因为操作系统内核负责管理套接字资源，并且要确保多个进程可以共享同一个套接字。只有当所有使用该套接字的进程都退出或关闭它时，内核才会回收该套接字的所有资源。</p>
+</blockquote>
+]]></content>
   </entry>
   <entry>
     <title>并发</title>
-    <url>/2022/12/10/%E9%AB%98%E5%B9%B6%E5%8F%91/</url>
+    <url>/2023/03/10/%E9%AB%98%E5%B9%B6%E5%8F%91/</url>
     <content><![CDATA[<p>本文包含高并发相关的知识。以及一些高并发解决方案。</p>
 <span id="more"></span>
 
@@ -1034,7 +1147,7 @@
   </entry>
   <entry>
     <title>IO</title>
-    <url>/2022/08/10/IO/</url>
+    <url>/2022/11/10/IO/</url>
     <content><![CDATA[<p>IO 操作</p>
 <span id="more"></span>
 
@@ -1191,7 +1304,7 @@
   </entry>
   <entry>
     <title>排序算法</title>
-    <url>/2023/01/25/%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95/</url>
+    <url>/2022/10/25/%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95/</url>
     <content><![CDATA[<p>一些排序算法</p>
 <span id="more"></span>
 
@@ -1383,5 +1496,187 @@ int main(int argc, const char* argv[])
 &#125;
 </code></pre>
 ]]></content>
+  </entry>
+  <entry>
+    <title>TCP、UDP通信模型</title>
+    <url>/2023/02/02/TCP%E3%80%81UDP%E9%80%9A%E4%BF%A1%E6%A8%A1%E5%9E%8B/</url>
+    <content><![CDATA[<p>本文主要位通信协议、网络体系结构、TCP&#x2F;IP协议等分析介绍使用。</p>
+<span id="more"></span>
+
+<h1 id="前置"><a href="#前置" class="headerlink" title="前置"></a>前置</h1><p>计算机网络的本质作用其实就是让<strong>IT设备</strong>之间能够进行数据传输和<strong>信息交互（通信）</strong><br>最简单的通信模型如下：<br><img src="/../image/SimpleProtocol.png" alt="Alt text"></p>
+<p>其中<strong>通信协议</strong>的作用就是 让通信的双方能够识别并能接收到数据信息。<br><img src="/../image/TCPIPModel.png" alt="Alt text"></p>
+<p>这种层次结构使得不同的协议可以在不同的层次上进行交互和搭配，而彼此之间不会产生不必要的干扰，提高了网络管理的效率和可靠性。</p>
+<h1 id="TCP-IP协议簇的体系结构"><a href="#TCP-IP协议簇的体系结构" class="headerlink" title="TCP&#x2F;IP协议簇的体系结构"></a>TCP&#x2F;IP协议簇的体系结构</h1><p>TCP&#x2F;IP协议族是Internet中最重要的一组协议，并且广泛应用于各种计算机网络和系统之间的通信。<br>TCP&#x2F;IP协议族（簇）的体系结构其实也是现实版的OSI体系，是现实的工业互联标准，共有四层：<br><img src="/../image/TCPIP.png" alt="Alt text"></p>
+<h2 id="网络的体系结构"><a href="#网络的体系结构" class="headerlink" title="网络的体系结构"></a>网络的体系结构</h2><ul>
+<li>网络采用分而治之的方法设计，将网络的功能划分为不同的模块，以分层的形式有机组合在一起。</li>
+<li>每层实现不同的功能，其内部实现方法对外部其他层次来说是透明的，每层向上一层提供服务，同时使用下层提供的服务。</li>
+<li>网络体系结构即指网络层次和每层所使用的协议的集合。</li>
+</ul>
+<h2 id="常见的TCP-IP协议"><a href="#常见的TCP-IP协议" class="headerlink" title="常见的TCP&#x2F;IP协议"></a>常见的TCP&#x2F;IP协议</h2><p>按照四层模型，TCP&#x2F;IP协议族具有以下四层：</p>
+<ol>
+<li><p><strong>应用层（Application Layer）</strong>：应用层提供了与特定应用程序和网络服务的通信接口。任何需要从网络中获取数据的应用程序，如Web浏览器、邮件客户端、FTP客户端等，都是在应用层实现的。常见的应用层协议包括HTTP、FTP、SMTP、POP3等。</p>
+<ul>
+<li><code>HTTP（HyperText Transfer Protocol）协议</code>：用于Web服务器和Web浏览器之间互相传输超文本信息，实现浏览器访问万维网的功能。</li>
+<li><code>SMTP（Simple Mail Transfer Protocol）协议</code>：用于邮件传输协议，使邮箱能够发送和接收邮件。</li>
+<li><code>POP3（Post Office Protocol version 3）协议</code>：用于收取邮件，将服务器中的邮件下载到客户端计算机。</li>
+<li><code>FTP（File Transfer Protocol）协议</code>：用于在网络上传输文件，实现文件共享及远程文件传输等功能。</li>
+<li><code>TFTP简单文件传输协议</code>：使用UDP传输。</li>
+<li><code>DNS解析协议</code>：把url域名解析成ip地址的一种协议。</li>
+<li><code>NFS文件共享协议</code>：一般使用UDP传输。</li>
+</ul>
+</li>
+<li><p><strong>传输层（Transport Layer）</strong>：传输层为应用程序提供了端到端的通信，为不同主机的通信进程设定端口号，并将数据在不同主机之间传输。常见的传输层协议包括TCP、UDP等</p>
+<ul>
+<li><code>TCP（Transmission Control Protocol）协议</code>：一种可靠的、面向连接的协议，用于确保数据的可靠传输，保障数据的准确（数据无误，无丢失，无失序，无重复到达的通信）。<ul>
+<li>优点：准确，缺点：传输效率不高。</li>
+<li>场景：数据要求严格的传输。</li>
+</ul>
+</li>
+<li><code>UDP（User Datagram Protocol）协议</code>：一种不可靠的、无连接的协议，用于在不需要可靠数据传输时，提高数据传输效率。<ul>
+<li>优点：传输效率高，缺点：可能会有丢包现象</li>
+<li>场景：对数据要求不高的场景。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>网络层（Internet Layer）</strong>：网络层用于实现IP协议，对数据包的传输进行路由选择和寻址，并通过向下一层提供不可靠的数据报送程序来实现传输。常见的网络层协议为IP（Internet Protocol）协议以及相关协议例如ICMP、ARP等。</p>
+<ul>
+<li><code>IP（Internet Protocol）协议</code>：IP协议使得不同的计算机可以互相通信，并能够在不同的网络之间传递数据包，实现了整个互联网的路由功能。是Internet中发送数据的关键协议之一。</li>
+<li><code>ICMP（Internet Control Message Protocol）协议</code>：用于在IP主机，路由器之间的传递控制消息，比如ping命令、网络是否可达等等。</li>
+<li><code>IGMP （Internet Group Message Protocol）协议</code>：互联网组管理协议，是一个组播协议，用于主机和组播路由之间的通信。</li>
+</ul>
+</li>
+<li><p><strong>物理层和数据链路层（Link Layer）</strong>：物理层和数据链路层用于实现与物理媒介的接口，将比特流转换为实际可传输的信号。它们是一组紧密相连的层，负责处理数据帧、网络接口卡（NIC）、帧的检错、流量控制等相应的操作。常见的物理层和数据链路层协议包括以太网、PPP、SLIP等。</p>
+<ul>
+<li><code>ARP（Address Resolution Protocol）协议</code>：将IP地址转换成物理地址，使一个通信节点（如计算机）能够定位另一个通信节点（如路由器）的物理地址。</li>
+<li><code>RARP(Reverse Address Resolution Protocol) 协议</code>：通过MAC地址获取对方的ip地址。</li>
+</ul>
+</li>
+</ol>
+<h2 id="TCP-IP四层模型中不同层次使用的协议之间的关系"><a href="#TCP-IP四层模型中不同层次使用的协议之间的关系" class="headerlink" title="TCP&#x2F;IP四层模型中不同层次使用的协议之间的关系"></a>TCP&#x2F;IP四层模型中不同层次使用的协议之间的关系</h2><ol>
+<li>应用层：应用层负责应用程序数据的格式或者说协议，使用的协议有<code>HTTP</code>、<code>FTP</code>、<code>SMTP</code>、<code>DNS</code>等；</li>
+<li>传输层：传输层负责端到端的通信，包括数据的分段和重新组装，使用的协议有<code>TCP</code>和<code>UDP</code>；</li>
+<li>网络层：网络层负责网络上的寻址、路由和分组传输，使用的协议有<code>IP</code>、<code>ICMP</code>和<code>ARP</code>；</li>
+<li>数据链路层：数据链路层负责物理网络上的数据传输，包括数据的分帧、差错校验和流量控制等，使用的协议有<code>以太网</code>和<code>PPP</code>。</li>
+</ol>
+<p>因此，<strong>TCP&#x2F;IP四层模型</strong>中每层使用的协议是相互独立、功能分层的，每个层次上使用的协议都为上一层提供服务（比如，如果应用层使用<code>TFTP</code>，那么上一层的网络传递协议选择就一定要选择<code>UDP</code>，因为<code>TFTP</code>不支持<code>TCP</code>,只支持<code>UDP</code>）。最终，所有协议协同工作，实现了网络中各种应用程序之间的通信。<br><img src="/../image/TCPIPClan.png" alt="Alt text"></p>
+<h2 id="封包与拆包过程"><a href="#封包与拆包过程" class="headerlink" title="封包与拆包过程"></a>封包与拆包过程</h2><p><img src="/../image/Package.png" alt="Alt text">  </p>
+<p><strong>发送端：</strong></p>
+<ol>
+<li><p><strong>应用层</strong> - 发送端的应用程序将数据进行封装，将数据转换为网络可传输的格式，例如HTTP协议、FTP协议、SMTP协议等。</p>
+</li>
+<li><p><strong>传输层</strong> - 这个阶段选用TCP或UDP协议，根据应用层选择对应的协议，如果是可靠传输会选择TCP协议进行传输，而无需可靠传输的数据则会选择UDP协议，并设置好SERVER IP和端口号。</p>
+</li>
+<li><p><strong>网络层</strong> - 进行IP地址的解析，将数据封装成IP数据包，进行路由选择，通过路由器或交换机将数据包发送到互联网上。</p>
+</li>
+<li><p><strong>数据链路层</strong> - 将IP数据包封装在数据帧中，设置好目的MAC地址和源MAC地址，通过本机所连的交换机转发到接入的路由器。</p>
+</li>
+<li><p><strong>物理层</strong> - 讲数字信号转换成模拟信号，在传输线上进行数据传输，利用调制、编码、解码、调幅等技术进行信号转换和传输。</p>
+</li>
+</ol>
+<p><strong>接收端：</strong></p>
+<ol>
+<li><p><strong>物理层</strong> - 接收方收到模拟信号后，将模拟信号转换为数字信号。</p>
+</li>
+<li><p><strong>数据链路层</strong> - 将收到的数据帧中的MAC头和数据载荷分离，每一帧内找出自己的MAC地址，校验数据帧的数据完整性和正确性。</p>
+</li>
+<li><p><strong>网络层</strong> - 进行IP协议解析，从IP数据包中提取出源IP地址和目标IP地址。</p>
+</li>
+<li><p><strong>传输层</strong> - 进行TCP协议解析，判断数据是否为可靠传输，根据TCP头部信息中的端口号，将数据传输给对应的应用层进行处理。</p>
+</li>
+<li><p><strong>应用层</strong> - 最终数据将由接收方的应用程序进行处理，解码并完成相关操作。</p>
+</li>
+<li><p><strong>回传信息</strong> - 接收方应用程序处理过程中或处理完成后，可发送一条ACK信息表示数据已接收成功。</p>
+</li>
+</ol>
+<blockquote>
+<p><strong>注意</strong> 在整个数据传输过程中，可能会遇到不同的网络问题，例如网络试验慢、数据包丢失等，因此需要利用相应的协议和技术进行性能优化和错误处理来确保数据传输的正确和稳定。</p>
+</blockquote>
+<h2 id="数据帧"><a href="#数据帧" class="headerlink" title="数据帧"></a>数据帧</h2><p><code>TCP/IP</code>通信中，一帧数据的大小是由底层传输介质的<code>MTU</code>（<code>Maximum Transmission Unit</code>，最大传输单元）决定的。不同的网络设备和网络传输介质有不同的<code>MTU</code>，比如以太网的<code>MTU</code>一般为1500字节，而无线网络的<code>MTU</code>一般较小。</p>
+<p>在发送数据时，<code>TCP</code>协议会将数据分割成多个大小相等的<code>IP</code>数据包（<code>IP</code>数据报文），每个数据包的大小不能超过<code>MTU</code>。在传输过程中，这些数据包在不同的网络设备之间被逐一传递，直到到达目的地，并在目的地重新组装成完整的数据。因此，<code>TCP/IP</code>通信中一帧数据的大小是不固定的，而是由网络设备的<code>MTU</code>所决定的。</p>
+<p>传输每帧数据包的大小一般为：46~1500字节，在Linux中可以通过ifconfig进行查看，但传输过程中以整个传输过程中的最小通路为准。<br><img src="/../image/DataFrames.png" alt="Alt text"></p>
+<p>TCP段，如果是UDP则占8个字节。</p>
+<p>所以：</p>
+<p>UDP 包MTU的大小就应该是 1500 - IP头(20) - UDP头(8) &#x3D; 1472(Bytes)<br>TCP 包MTU的大小就应该是 1500 - IP头(20) - TCP头(20) &#x3D; 1460 (Bytes)</p>
+<h1 id="TCP"><a href="#TCP" class="headerlink" title="TCP"></a>TCP</h1><h2 id="TCP-封装格式"><a href="#TCP-封装格式" class="headerlink" title="TCP 封装格式"></a>TCP 封装格式</h2><p>在应用层的数据在发生传递会在传输层，如果选择的TCP传输，将会为这个应用层数加前加上TCP报头，TCP报头如下：<br><img src="/../image/TCPDate.png" alt="Alt text"></p>
+<ol>
+<li>**<code>源端口号</code>**：发送方端口号</li>
+<li>**<code>目的端口号</code>**：接收方端口号</li>
+<li>**<code>序列号</code>**：本报文段的数据的第一个字节的序号，使用小写seq表示</li>
+<li>**<code>确认序号</code>**：期望收到对方下一个报文段的第一个数据字节的序号，使用小写<code>ack</code>表示</li>
+<li>**<code>首部长度（数据偏移）</code>**：4个bit,TCP报文段的数据起始处距离TCP报文段的起始处有多远，即首部长度。即以4字节为计算单位,取值通常为 5~15</li>
+<li>**<code>保留</code>**：占6位，保留为今后拓展使用，目前应置为0.</li>
+<li><strong><code>紧急URG</code></strong>: 此位置1，表明紧急指针字段有效，它告诉系统此报文段中有紧急数据，应尽快传送</li>
+<li><strong><code>确认ACK</code></strong>: 仅当ACK&#x3D;1时确认号字段才有效，TCP规定，在连接建立后所有传达的报文段都必须把ACK置1</li>
+<li>**<code>推送PSH</code>**：当两个应用进程进行交互式的通信时，有时在一端的应用进程希望在键入一个命令后立即就能够收到对方的响应。在这种情况下，TCP就可以使用推送（push）操作，这时，发送方TCP把PSH置1，并立即创建一个报文段发送出去，接收方收到PSH&#x3D;1的报文段，就尽快地（即“推送”向前）交付给接收应用进程，而不再等到整个缓存都填满后再向上交付</li>
+<li><strong><code>复位RST</code></strong>: 用于复位相应的TCP连接时会置1</li>
+<li><strong><code>同步SYN</code></strong>: 仅在三次握手建立TCP连接时有效。当SYN&#x3D;1而ACK&#x3D;0时，表明这是一个连接请求报文段，对方若同意建立连接，则应在相应的报文段中使用SYN&#x3D;1和ACK&#x3D;1.因此，SYN置1就表示这是一个连接请求或连接接受报文。</li>
+<li>**<code>终止FIN</code>**：用来释放一个连接。当FIN&#x3D;1时，表明此报文段的发送方的数据已经发送完毕，并要求释放运输连接。</li>
+<li>**<code>窗口</code>**：用于控制数据传输的速度和流量控制。窗口大小表示接收端当前可用的缓存大小，即接收端还可以接收多少字节的数据。这个值是一个16位的整数，可以表示的窗口大小为 0~65535 字节。当发送方发送数据时，它会根据接收方的窗口大小动态地调整发送的数据量，以避免接收方缓存区满了而导致数据丢失。发送方会根据接收方发送过来的窗口大小调整发送的数据量，如果窗口大小变小，发送方会减少发送的数据量，如果窗口大小变大，发送方则可以增加发送的数据量。TCP 的窗口大小控制可以防止数据包过多拥塞网络，也可以保证数据传输的流畅性和可靠性。在数据传输过程中，如果接收方的窗口大小为 0，发送方就会停止发送数据，等待接收方重新通知其窗口大小。这种流量控制的机制可以使得 TCP 在高速、高负载的网络中稳定运行，并有效地避免了数据的丢失和拥塞。</li>
+<li>**<code>校验和</code>**：校验和字段用于检验 TCP 报头和数据段的数据是否正确，以保证数据传输的正确性和可靠性。这个字段是 16 位的整数。</li>
+<li>**<code>紧急指针</code>**：仅在URG&#x3D;1时才有意义，它指出本报文段中的紧急数据的字节数（紧急数据结束后就是普通数据），即指出了紧急数据的末尾在报文中的位置，注意：即使窗口为零时也可发送紧急数据</li>
+<li>**<code>选项</code>**：长度可变，最长可达40字节，当没有使用选项时，TCP首部长度是20字节</li>
+</ol>
+<h2 id="TCP-三次握手"><a href="#TCP-三次握手" class="headerlink" title="TCP 三次握手"></a>TCP 三次握手</h2><p>TCP 使用三次握手（three-way handshake）的方式来建立一个连接，以确保通信双方都能够正确地接收和发送数据。<br>发生在客户端connect函数 与  服务器的 accepet 函数之前：</p>
+<p>三次握手的过程如下：</p>
+<ol>
+<li>客户端发送一个带有 SYN（同步序列号Synchronize Sequence Numbers）标志的数据包，表示客户端请求建立连接。客户端选择一个随机的序列号（序列号 A），并将该序列号放在 SYN 标志的字段中，然后向服务器端发送这个数据包。此时客户端进入 SYN_SENT 状态。</li>
+<li>服务器收到客户端的请求后，会回复一个带有 SYN&#x2F;ACK 标志的数据包，表示服务器已经收到客户端的请求，并同意建立连接。服务器选择一个随机的序列号（序列号 B），并将该序列号放在 SYN 标志的字段中，将自己的初始序列号（序列号 A + 1）放在 ACK 标志的字段中，然后将数据包发送给客户端。此时服务器进入 SYN_RCVD 状态。</li>
+<li>客户端收到服务器的回复后，会发送一个带有 ACK 标志的数据包，表示客户端确认已经收到了服务器的响应，并同意建立连接。客户端将服务器的初始序列号（序列号 B + 1）放在 ACK 标志的字段中，然后将数据包发送给服务器。此时客户端和服务器都进入 ESTABLISHED 状态，连接建立完成。</li>
+</ol>
+<p>三次握手的过程可以确保客户端和服务器都已经准备好建立连接，并可以正确地发送和接收数据。如果服务器没有收到客户端的请求，或者客户端没有收到服务器的响应，则会重新发送请求，直到建立连接成功。三次握手的机制可以有效地保证数据的可靠性和安全性，同时也避免了重复的连接请求和资源浪费。</p>
+<p><img src="/../image/TCPHandshake.png" alt="Alt text"></p>
+<h2 id="TCP-四次挥手"><a href="#TCP-四次挥手" class="headerlink" title="TCP 四次挥手"></a>TCP 四次挥手</h2><p><img src="/../image/TCPWave.png" alt="Alt text"></p>
+<ol>
+<li>客户端发送一个带有 FIN（结束标志）的数据包，表示客户端已经完成了所有的数据发送任务，并且准备关闭连接。客户端选择一个随机的序列号（序列号 C），并将该序列号放在 FIN 标志的字段中，然后向服务器端发送这个数据包。此时客户端进入 FIN_WAIT_1 状态。</li>
+<li>服务器收到客户端的请求后，会回复一个带有 ACK 标志的数据包，表示服务器已经收到客户端的请求，并同意关闭连接。服务器将客户端的序列号（序列号 C + 1）放在 ACK 标志的字段中，然后将数据包发送给客户端。此时服务器进入 CLOSE_WAIT 状态，客户端收到服务器的回复后，进入 FIN_WAIT_2 状态。</li>
+<li>服务器准备好关闭连接时，会发送一个带有 FIN 标志的数据包，表示服务器已经完成了所有的数据发送任务，并且准备关闭连接。服务器选择一个随机的序列号（序列号 D），并将该序列号放在 FIN 标志的字段中，将客户端的序列号（序列号 C + 1）放在 ACK 标志的字段中，然后将数据包发送给客户端。此时服务器进入 LAST_ACK 状态。</li>
+<li>客户端收到服务器的回复后，会回复一个带有 ACK 标志的数据包，表示客户端已经收到服务器的回复，并同意关闭连接。客户端将服务器的序列号（序列号 D + 1）放在 ACK 标志的字段中，然后将数据包发送给服务器。此时客户端进入 TIME_WAIT 状态，等待 2MSL（最长报文段寿命）后，客户端和服务器都进入 CLOSED 状态，连接关闭完成。</li>
+<li>服务器收到客户端的回复后，进入 CLOSED 状态，连接关闭完成。</li>
+</ol>
+<p>四次挥手的过程可以确保客户端和服务器都已经完成了所有的数据发送任务，并且准备好关闭连接。如果客户端没有收到服务器的回复，则会重新发送请求，直到关闭连接成功。</p>
+<h2 id="粘包问题"><a href="#粘包问题" class="headerlink" title="粘包问题"></a>粘包问题</h2><p>由于TCP是基于<strong>字节流</strong>的，因此在发送端，只要把数据放入到发送缓冲区，就会发送出去，而不考虑数据包的大小。这就可能导致接收端收到的数据包大于发送端的数据包，也可能导致接收端收到的数据包小于发送端的数据包。这种情况就称为粘包。</p>
+<blockquote>
+<p><strong>字节流</strong>可以理解为一个双向的通道里流淌的数据，这个数据其实就是我们常说的二进制数据，简单来说就是一大堆 01 串。这些 01 串之间没有任何边界。</p>
+</blockquote>
+<p><strong>内核中的缓冲区</strong><br>Socket 内核缓冲区是指在操作系统内核中维护的一块内存，用于存储网络数据的临时缓存区。当应用程序通过 Socket 发送数据时，数据先被写入内核缓冲区，然后再由操作系统将数据发送到网络上。类似地，当应用程序从 Socket 接收数据时，数据也是先被读取到内核缓冲区中，然后再由应用程序读取。</p>
+<p>内核缓冲区的作用是为了提高网络传输的效率和可靠性。当应用程序发送数据时，内核缓冲区可以将多个小数据包合并成一个大的数据包，从而减少网络传输中的开销。而当应用程序接收数据时，内核缓冲区可以对接收到的数据进行拆分和重组，以保证数据的完整性和正确性。</p>
+<p>操作系统为每个 Socket 连接分配了两个内核缓冲区，一个用于发送数据，另一个用于接收数据。这些缓冲区的大小可以通过系统参数进行配置，一般情况下，应该根据实际情况合理调整缓冲区大小，以达到最佳的网络传输性能。</p>
+<p><img src="/../image/KernelBuffer.png" alt="Alt text"></p>
+<p>应用层传到 <code>TCP</code> 协议的数据，不是以<strong>消息报</strong>为单位向目的主机发送，而是以<strong>字节流</strong>的方式发送到下游，这些数据可能被<strong>切割和组装</strong>成各种数据包，接收端收到这些数据包后没有正确还原原来的消息，因此出现<strong>粘包现象</strong>。比如：在传输过程中，如果一端短段时间内发送多个数据包，为了提高传输效率内核中的Naggle算法，会将多个小的数据合并为一个较大的数据进行传输，可能就会数据粘连的问题。 </p>
+<h3 id="产生的原因"><a href="#产生的原因" class="headerlink" title="产生的原因"></a>产生的原因</h3><p>关于Nagle算法导致的粘包问题</p>
+<blockquote>
+<p>MTU: Maximum Transmit Unit，最大传输单元。 由网络接口层（数据链路层）提供给网络层最大一次传输数据的大小；一般 MTU&#x3D;1500 Byte。<br>假设IP层有 &lt;&#x3D; 1500 byte 需要发送，只需要一个 IP 包就可以完成发送任务；假设 IP 层有&gt; 1500 byte 数据需要发送，需要分片才能完成发送，分片后的 IP Header ID 相同。<br>MSS：Maximum Segment Size 。 TCP 提交给 IP 层最大分段大小，不包含 TCP Header 和 TCP Option，只包含 TCP Payload ，MSS 是 TCP 用来限制应用层最大的发送字节数。</p>
+</blockquote>
+<p>假设 MTU&#x3D; 1500 byte，那么 MSS &#x3D; 1500- 20(IP Header) -20 (TCP Header) &#x3D; 1460 byte，如果应用层有 2000 byte 发送，那么需要两个切片才可以完成发送，第一个 TCP 切片 &#x3D; 1460，第二个 TCP 切片 &#x3D; 540。<br>在 Nagle 算法开启的状态下，数据包在以下两个情况会被发送：</p>
+<blockquote>
+<p>如果包长度达到MSS（或含有Fin包），立刻发送，否则等待下一个包到来；如果下一包到来后两个包的总长度超过MSS的话，就会进行拆分发送；<br>等待超时（一般为200ms），第一个包没到MSS长度，但是又迟迟等不到第二个包的到来，则立即发送。</p>
+</blockquote>
+<h3 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h3><ol>
+<li>**<code>定长消息</code>**：在发送数据之前，将数据按照固定长度分割成多个数据包发送，接收方每次接收一个固定长度的数据包，从而避免了粘包问题。（缺点：虽然这种方式可以解决粘包和拆包的问题,但这种固定缓冲区大小的方式增加了不必要的数据传输;当这种方式当发送的数据比较小时会使用空字符来弥补,所以这种方式就大大的增加了网络传输的负担,所以它也不是最佳的解决方案。）</li>
+<li>**<code>特定字符分割</code>**：在发送数据时，在每个数据包的结尾添加特定的字符或标记，接收方在接收数据时，根据特定字符或标记切分数据包，从而避免了粘包问题。（缺点是报文中不能有相同的字符或标记，不常用）</li>
+<li>**<code>消息长度</code>**：在发送数据时，在每个数据包的开头添加表示消息长度的字段，接收方先读取消息长度，然后根据消息长度读取数据包，从而避免了粘包问题。（网络框架Netty所用的解决方案）</li>
+<li>**<code>利用应用层协议</code>**：在应用层协议中定义消息格式和消息长度，从而避免TCP传输中的粘包问题。</li>
+</ol>
+<blockquote>
+<p>注意</p>
+<ol>
+<li>发送方和接收方需要使用相同的方法，以保证数据能够正确地发送和接收。</li>
+<li>在发送数据时，需要注意数据包的大小，不宜过大或过小，以避免传输效率低下或造成拥堵。</li>
+<li>在接收数据时，需要及时读取数据，不要等待所有数据都接收完成再进行处理，以避免缓存溢出或处理延迟过大。</li>
+</ol>
+</blockquote>
+<h3 id="Netty中的解决方案-消息长度"><a href="#Netty中的解决方案-消息长度" class="headerlink" title="Netty中的解决方案 - 消息长度"></a>Netty中的解决方案 - 消息长度</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;arpa/inet.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;netinet/in.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;netinet/ip.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdbool.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">write_N</span><span class="params">(<span class="type">int</span> fd, <span class="type">char</span>* buf, <span class="type">int</span> newMsgLen)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span>(buf == <span class="literal">NULL</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="type">int</span> n = newMsgLen;</span><br><span class="line">    <span class="keyword">while</span>(n &gt; <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="type">int</span> len = write(fd,buf,n);</span><br><span class="line">        <span class="keyword">if</span>(len == <span class="number">-1</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            perror(<span class="string">&quot;write err:&quot;</span>);</span><br><span class="line">            <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        buf += len;</span><br><span class="line">        n -= len;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> newMsgLen;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">writeToSocket</span><span class="params">(<span class="type">int</span> fd,<span class="type">char</span>* buf, <span class="type">int</span> len)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span>(buf == <span class="literal">NULL</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//1.获取要发送的报文的长度。</span></span><br><span class="line">    <span class="type">int</span> MsgLen = <span class="built_in">strlen</span>(buf);</span><br><span class="line">    <span class="comment">//2.把报文件长度设置为网络字节序：</span></span><br><span class="line">    <span class="type">int</span> MsgLen_netOrder = htonl(MsgLen);</span><br><span class="line"></span><br><span class="line">    <span class="type">char</span> senderBuf[<span class="number">4</span> + MsgLen];</span><br><span class="line">    <span class="built_in">memset</span>(senderBuf,<span class="number">0</span>,<span class="keyword">sizeof</span>(senderBuf));</span><br><span class="line">    <span class="comment">//3.通过内存拷贝的方式把数据放在有消息长度的用户缓冲区：</span></span><br><span class="line">    <span class="built_in">memcpy</span>(senderBuf,&amp;MsgLen_netOrder,<span class="number">4</span>);</span><br><span class="line">    <span class="comment">//4.拷贝报文：</span></span><br><span class="line">    <span class="built_in">memcpy</span>(senderBuf+<span class="number">4</span>,buf,MsgLen);</span><br><span class="line">    <span class="type">int</span> nbytes = write_N(fd,senderBuf,<span class="number">4</span> + MsgLen);</span><br><span class="line">    <span class="keyword">return</span> nbytes;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> <span class="type">const</span> *argv[])</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">//1.创建流式套接字：</span></span><br><span class="line">    <span class="type">int</span> socket_fd = socket(AF_INET,SOCK_STREAM,<span class="number">0</span>);</span><br><span class="line">    <span class="keyword">if</span>(socket_fd == <span class="number">-1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        perror(<span class="string">&quot;socket err:&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//2.创建一个网络信息结构体:</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> <span class="title">serverInfo</span> =</span> &#123;<span class="number">0</span>&#125;;</span><br><span class="line">    serverInfo.sin_family = AF_INET;</span><br><span class="line">    serverInfo.sin_port = htons(<span class="number">6666</span>);</span><br><span class="line">    serverInfo.sin_addr.s_addr = inet_addr(<span class="string">&quot;192.168.250.100&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//使用connect函数连接主机：</span></span><br><span class="line">    <span class="type">int</span> ret = connect(socket_fd,(<span class="type">const</span> <span class="keyword">struct</span> sockaddr*)&amp;serverInfo,<span class="keyword">sizeof</span>(serverInfo));</span><br><span class="line">    <span class="keyword">if</span>(ret == <span class="number">-1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        perror(<span class="string">&quot;connect err:&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="type">const</span> <span class="type">char</span>* str = <span class="string">&quot;hellowrold&quot;</span>;</span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span> i = <span class="number">0</span>; i &lt; <span class="number">30</span>; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="type">int</span> nbytes = writeToSocket(socket_fd,str,<span class="built_in">strlen</span>(str));</span><br><span class="line">        <span class="keyword">if</span>(nbytes == <span class="number">-1</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;%s \n&quot;</span>,str);</span><br><span class="line">    &#125;</span><br><span class="line">    close(socket_fd);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;arpa/inet.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;netinet/in.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;netinet/ip.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdbool.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">read_N</span><span class="params">(<span class="type">int</span> fd, <span class="type">char</span>* buf, <span class="type">int</span> MsgLen)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span>(buf == <span class="literal">NULL</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="type">int</span> n = MsgLen;</span><br><span class="line">    <span class="keyword">while</span> (n &gt; <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="type">int</span> nbytes = read(fd,buf,n);</span><br><span class="line">        <span class="keyword">if</span>(nbytes == <span class="number">-1</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            perror(<span class="string">&quot;read err&quot;</span>);</span><br><span class="line">            <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span>(nbytes == <span class="number">0</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">&quot;对端关闭\n&quot;</span>);</span><br><span class="line">            <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        buf += nbytes;</span><br><span class="line">        n -= nbytes;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> MsgLen;</span><br><span class="line">    </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">readFromSocket</span><span class="params">(<span class="type">int</span> fd, <span class="type">char</span>* buf)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span>(buf == <span class="literal">NULL</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="type">int</span> msgLen = <span class="number">0</span>;</span><br><span class="line">    <span class="comment">//1.先读取报文件前4个字节，报文件的长度：</span></span><br><span class="line">    <span class="type">int</span> nbytes = read(fd,&amp;msgLen,<span class="number">4</span>);</span><br><span class="line">    <span class="comment">//2.把读取网络字节序转成主机字节序</span></span><br><span class="line">    msgLen = ntohl(msgLen);</span><br><span class="line">    nbytes = read_N(fd,buf,msgLen);</span><br><span class="line">    <span class="comment">//返回读取字节数：</span></span><br><span class="line">    <span class="keyword">return</span> nbytes;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> <span class="type">const</span> *argv[])</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// 1.创建流式监听套接字类型：</span></span><br><span class="line">    <span class="type">int</span> listen_fd = socket(AF_INET, SOCK_STREAM, <span class="number">0</span>);</span><br><span class="line">    <span class="keyword">if</span> (listen_fd == <span class="number">-1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        perror(<span class="string">&quot;socket() err:&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 2.定义一个网络地址信息结构体：</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> <span class="title">serverInfo</span>;</span></span><br><span class="line">    <span class="built_in">memset</span>(&amp;serverInfo, <span class="number">0</span>, <span class="keyword">sizeof</span>(serverInfo));</span><br><span class="line">    serverInfo.sin_family = AF_INET;</span><br><span class="line">    <span class="comment">// 端口号都是2字节，short类型，所以一定要注意字节序的问题：</span></span><br><span class="line">    serverInfo.sin_port = htons(<span class="number">6666</span>);</span><br><span class="line">    serverInfo.sin_addr.s_addr = inet_addr(<span class="string">&quot;192.168.250.100&quot;</span>);</span><br><span class="line">    <span class="comment">// 3.绑定网络地址信息结构体：</span></span><br><span class="line">    <span class="type">int</span> ret = bind(listen_fd, (<span class="type">const</span> <span class="keyword">struct</span> sockaddr *)&amp;serverInfo, <span class="keyword">sizeof</span>(serverInfo));</span><br><span class="line">    <span class="keyword">if</span> (ret == <span class="number">-1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        perror(<span class="string">&quot;bind err:&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 4.设置监听的状态：</span></span><br><span class="line">    ret = listen(listen_fd, <span class="number">1</span>);</span><br><span class="line">    <span class="keyword">if</span> (ret == <span class="number">-1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        perror(<span class="string">&quot;listen err:&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// struct sockaddr clientInfo = &#123;0&#125;;//如果关于客户端地址信息就写一个客户端的信息结构体。</span></span><br><span class="line">    <span class="comment">// int clientlen;</span></span><br><span class="line">    <span class="comment">// 5.阻塞等待客户端的连接：</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;循环服务器启动\n&quot;</span>);</span><br><span class="line">    <span class="keyword">while</span> (<span class="literal">true</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="type">int</span> connect_fd = accept(listen_fd, <span class="literal">NULL</span>, <span class="literal">NULL</span>);</span><br><span class="line">        <span class="keyword">if</span> (connect_fd == <span class="number">-1</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            perror(<span class="string">&quot;accept err:&quot;</span>);</span><br><span class="line">            <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">while</span> (<span class="literal">true</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="comment">// 数据的收发：</span></span><br><span class="line">            <span class="comment">// 定义用户数据的缓冲区buf;</span></span><br><span class="line">            <span class="type">char</span> buf[<span class="number">128</span>] = &#123;<span class="number">0</span>&#125;;</span><br><span class="line">            <span class="type">int</span> nbtyes = readFromSocket(connect_fd, buf);</span><br><span class="line">            <span class="keyword">if</span> (nbtyes == <span class="number">-1</span>)</span><br><span class="line">            &#123;</span><br><span class="line">                perror(<span class="string">&quot;read err:&quot;</span>);</span><br><span class="line">                <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span>(nbtyes == <span class="number">0</span>)</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="built_in">printf</span>(<span class="string">&quot;对端断开了连接\n&quot;</span>);</span><br><span class="line">                close(connect_fd);</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">&quot;客户端发来的数据为 %s \n&quot;</span>,buf);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>注意 在TCP链接之后，如果断开之后，会出现短时间无法链接的情况</p>
+<p>TCP是一个面向连接的协议，它使用三次握手建立连接，并使用四次挥手断开连接。在断开连接后，TCP会将连接的端口号等相关信息保存在一个连接表中，并将其保留一段时间。这个时间被称为TIME_WAIT状态，它通常持续几分钟，这段时间内，连接表中的信息仍然存在，以确保网络中任何延迟的数据包到达时，TCP可以正确处理。</p>
+<p>当TCP连接关闭后，客户端和服务器端的TCP实现都会进入TIME_WAIT状态。在此状态下，这些连接表项不能被重新使用，因为TCP实现正在等待确保另一端确认连接已关闭。如果尝试在TIME_WAIT状态下重新建立TCP连接，会导致建立连接失败，因为TCP实现不能使用相同的端口和连接信息。</p>
+<p>另外，如果连接的一方关闭了连接，而另一方尝试向已关闭的连接发送数据，那么TCP实现会返回一个RST数据包，指示连接已经关闭。因此，在关闭TCP连接后，如果尝试立即重新连接，可能会由于RST数据包而导致连接失败。</p>
+<p>因此，要成功重新建立TCP连接，需要等待足够的时间使TIME_WAIT状态结束，或者在关闭连接后等待一段时间后再尝试重新连接。</p>
+</blockquote>
+<h1 id="UDP"><a href="#UDP" class="headerlink" title="UDP"></a>UDP</h1>]]></content>
   </entry>
 </search>
